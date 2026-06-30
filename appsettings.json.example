@@ -1,0 +1,7 @@
+{
+  "YookassaSettings": {
+    "ShopId": "SHOP_ID",
+    "SecretKey": "SECRET_KEY",
+    "ReturnUrl": "https://localhost:5275/payment/return"
+  }
+}
