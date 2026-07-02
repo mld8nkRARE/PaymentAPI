@@ -17,8 +17,9 @@ namespace PaymentAPI.Services
             var httpClient = httpClientFactory.CreateClient();
             _client = new AsyncClient(httpClient, false, client);
         }
-        public async Task<PaymentResult> CreatePayment(PaymentRequest request)
+        public async Task<PaymentResult> CreatePayment(PaymentRequest request, string idempotenceKey)
         {
+            //добавить проверку idempotenceKey 
             NewPayment newPayment = new NewPayment()
             {
                 Amount = request.Amount,
@@ -29,7 +30,7 @@ namespace PaymentAPI.Services
                     ReturnUrl = _yookassaSettings.ReturnUrl
                 }
             };
-            Payment payment = await _client.CreatePaymentAsync(newPayment);
+            Payment payment = await _client.CreatePaymentAsync(newPayment,idempotenceKey);
             var paymentId = new PaymentId(Guid.Parse(payment.Id));
             PaymentResult result = new PaymentResult
             {

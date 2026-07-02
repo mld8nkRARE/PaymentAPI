@@ -16,13 +16,14 @@ namespace PaymentAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreatePayment([FromBody] PaymentRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> CreatePayment([FromBody] PaymentRequest request,
+            [FromHeader(Name = "Idempotence-Key")]string idempotenceKey) //для idempotenceKey рекомендуется использовать V4 UUID
         {
-            PaymentResult result = await _paymentGateway.CreatePayment(request);
+            PaymentResult result = await _paymentGateway.CreatePayment(request,idempotenceKey);
             return Ok(result);
 
         }
-
+        
 
     }
 }
