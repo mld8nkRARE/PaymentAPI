@@ -19,7 +19,6 @@ namespace PaymentAPI.Services
         }
         public async Task<PaymentResult> CreatePayment(PaymentRequest request, string idempotenceKey)
         {
-            //добавить проверку idempotenceKey 
             NewPayment newPayment = new NewPayment()
             {
                 Amount = request.Amount,
@@ -32,6 +31,7 @@ namespace PaymentAPI.Services
             };
             Payment payment = await _client.CreatePaymentAsync(newPayment,idempotenceKey);
             var paymentId = new PaymentId(Guid.Parse(payment.Id));
+            
             PaymentResult result = new PaymentResult
             {
                 Status = payment.Status,
@@ -42,10 +42,7 @@ namespace PaymentAPI.Services
             };
             return result;
         }
-        public async Task<PaymentStatus> CheckStatus(PaymentId paymentId)
-        {
-            return PaymentStatus.Pending;
-        }
+        
 
     }
 }

@@ -19,9 +19,15 @@ namespace PaymentAPI.Controllers
         public async Task<IActionResult> CreatePayment([FromBody] PaymentRequest request,
             [FromHeader(Name = "Idempotence-Key")]string idempotenceKey) //для idempotenceKey рекомендуется использовать V4 UUID
         {
-            PaymentResult result = await _paymentGateway.CreatePayment(request,idempotenceKey);
-            return Ok(result);
-
+            try
+            {
+                PaymentResult result = await _paymentGateway.CreatePayment(request, idempotenceKey);
+                return Ok(result);
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
         
 

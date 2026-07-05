@@ -6,6 +6,6 @@ namespace PaymentAPI.Interfaces
     public interface IPaymentGateway
     {
         Task<PaymentResult> CreatePayment(PaymentRequest request, string idempotenceKey);
-        Task<PaymentStatus> CheckStatus(PaymentId paymentId);
+       
     }
 }
