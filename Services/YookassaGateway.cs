@@ -29,7 +29,7 @@ namespace PaymentAPI.Services
                     ReturnUrl = _yookassaSettings.ReturnUrl
                 }
             };
-            Payment payment = await _client.CreatePaymentAsync(newPayment,idempotenceKey);
+            Yandex.Checkout.V3.Payment payment = await _client.CreatePaymentAsync(newPayment,idempotenceKey);
             var paymentId = new PaymentId(Guid.Parse(payment.Id));
             
             PaymentResult result = new PaymentResult
