@@ -9,7 +9,6 @@ namespace PaymentAPI.Models
         public OrderStatus Status { get; private set; }
         public decimal TotalPrice { get; private set; }
         public UserId UserId { get; private init; }
-        public PaymentId PaymentId { get; private init; }
         public User User { get; private set; } = null!;
         public Payment? Payment { get; private set; }
 

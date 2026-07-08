@@ -21,7 +21,10 @@ namespace PaymentAPI.Services
         {
             NewPayment newPayment = new NewPayment()
             {
-                Amount = request.Amount,
+                Amount = new Amount{
+                    Value = request.Amount,
+                    Currency = request.Currency
+                },
                 Description = request.Description,
                 Confirmation = new Confirmation
                 {
@@ -30,13 +33,12 @@ namespace PaymentAPI.Services
                 }
             };
             Yandex.Checkout.V3.Payment payment = await _client.CreatePaymentAsync(newPayment,idempotenceKey);
-            var paymentId = new PaymentId(Guid.Parse(payment.Id));
-            
             PaymentResult result = new PaymentResult
             {
-                Status = payment.Status,
-                PaymentId = paymentId,
-                Amount = payment.Amount,
+                Status = payment.Status.ToString(),
+                ExternalPaymentId = payment.Id,
+                Amount = payment.Amount.Value,
+                Currency = payment.Amount.Currency,
                 ConfirmationUrl = payment.Confirmation.ConfirmationUrl,
                 CreatedAt = payment.CreatedAt
             };

@@ -19,18 +19,15 @@ namespace PaymentAPI.Models
         public Order Order { get; private set; } = null!;
         public User User { get; private set; } = null!;
         protected Payment() { }
-        public Payment(Order order, decimal amount, string currency, string? description = null)
+        public Payment(OrderId orderId,UserId userId, decimal amount, string currency, string? description = null)
         {
             ArgumentNullException.ThrowIfNull(order);
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(amount, nameof(amount));
             ArgumentNullException.ThrowIfNullOrEmpty(currency, nameof(currency));
 
             Id = new PaymentId();
-            OrderId = order.Id;
-            UserId = order.UserId;
-
-            Order = order;
-            User = order.User;           
+            OrderId = orderId;
+            UserId = userId;
 
             Amount = amount;
             Currency = currency;
