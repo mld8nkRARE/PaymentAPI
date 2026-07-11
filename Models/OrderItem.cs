@@ -12,6 +12,7 @@ namespace PaymentAPI.Models
         public decimal UnitPrice { get; private init; }
         public int Quantity { get; private set; }
         public Order Order { get; private set; } = null!;
+        public Product Product { get; private set; } = null!;
         protected OrderItem() { }
         public OrderItem(Order order,Product product, int quantity)
         {
@@ -19,7 +20,7 @@ namespace PaymentAPI.Models
             ArgumentNullException.ThrowIfNull(product);
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity, nameof(quantity));
 
-            Id = new OrderItemId();
+            Id = OrderItemId.New();
             OrderId = order.Id;
             ProductId = product.Id;
             Name = product.Name;

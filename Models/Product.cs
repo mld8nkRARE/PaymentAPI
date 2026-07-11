@@ -14,7 +14,7 @@ namespace PaymentAPI.Models
             ArgumentNullException.ThrowIfNullOrEmpty(name, nameof(name));
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(price);
             ArgumentOutOfRangeException.ThrowIfNegative(stockQuantity);
-            Id = new ProductId();
+            Id = ProductId.New();
             Name = name;
             Price = price;
             Description = description;

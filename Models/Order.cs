@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Formatters;
 using PaymentAPI.Primitives;
+using System.ComponentModel.DataAnnotations;
 namespace PaymentAPI.Models
 {
     public class Order
@@ -11,13 +12,14 @@ namespace PaymentAPI.Models
         public UserId UserId { get; private init; }
         public User User { get; private set; } = null!;
         public Payment? Payment { get; private set; }
-
+        [Timestamp]
+        public uint Xmin {  get; set; }
         private readonly List<OrderItem> _orderItems = new();
         public IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
         protected Order() { }
         public Order(UserId userId)
         {
-            Id = new OrderId();
+            Id = OrderId.New();
             CreatedAt = DateTime.UtcNow;
             Status = OrderStatus.Pending;
             UserId = userId;
@@ -46,8 +48,15 @@ namespace PaymentAPI.Models
             if (item is null) return;
 
             if (quantityToRemove is not null)
-            {  
-                item.DecreaseQuantity(quantityToRemove.Value);
+            {
+                if (item.Quantity <= quantityToRemove.Value)
+                {
+                    _orderItems.Remove(item);
+                }
+                else
+                {
+                    item.DecreaseQuantity(quantityToRemove.Value);
+                }
             }
             else
             {
