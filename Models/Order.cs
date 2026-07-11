@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Formatters;
-using PaymentAPI.Primitives;
+﻿using PaymentAPI.Primitives;
 using System.ComponentModel.DataAnnotations;
 namespace PaymentAPI.Models
 {
@@ -13,7 +12,7 @@ namespace PaymentAPI.Models
         public User User { get; private set; } = null!;
         public Payment? Payment { get; private set; }
         [Timestamp]
-        public uint Xmin {  get; set; }
+        public uint Xmin {  get; private set; }
         private readonly List<OrderItem> _orderItems = new();
         public IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
         protected Order() { }

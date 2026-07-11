@@ -12,8 +12,8 @@ namespace PaymentAPI.Models
         public DateTime CreatedAt { get; private init; }
         public string? Description { get; private set; }
 
-        public OrderId OrderId { get; init; }
-        public UserId UserId { get; init; }
+        public OrderId OrderId { get; private init; }
+        public UserId UserId { get; private init; }
 
         public Order Order { get; private set; } = null!;
         public User User { get; private set; } = null!;

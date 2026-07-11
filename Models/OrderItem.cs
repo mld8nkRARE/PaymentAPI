@@ -1,5 +1,4 @@
 ﻿using PaymentAPI.Primitives;
-using Yandex.Checkout.V3;
 namespace PaymentAPI.Models
 {
     public class OrderItem
