@@ -4,24 +4,24 @@ namespace PaymentAPI.Models
 {
     public class User
     {
-        public UserId UserId { get; private init; }
+        public UserId Id { get; private init; }
         public string FullName { get; private init; } = null!;
         public string Email { get; private set; } = null!;
-        public string PhoneNumber { get; private set; } = null!;
+        public string? PhoneNumber { get; private set; }
         public string PasswordHash { get; private init; } = null!;
 
         private readonly List<Order> _orders  = new();
+        private readonly List<Payment> _payments = new();
         public IReadOnlyCollection<Order> Orders => _orders.AsReadOnly();
-
+        public IReadOnlyCollection<Payment> Payments => _payments.AsReadOnly();
         protected User() { }
-        public User(string fullName, string email, string phoneNumber, string passwordHash)
+        public User(string fullName, string email, string passwordHash, string? phoneNumber = null)
         {
             ArgumentNullException.ThrowIfNullOrEmpty(fullName, nameof(fullName));
             ArgumentNullException.ThrowIfNullOrEmpty(email, nameof(email));
-            ArgumentNullException.ThrowIfNullOrEmpty(phoneNumber, nameof(phoneNumber));
             ArgumentNullException.ThrowIfNullOrEmpty(passwordHash, nameof(passwordHash));
 
-            UserId = new UserId();
+            Id = UserId.New();
             FullName = fullName;
             Email = email;
             PhoneNumber = phoneNumber;

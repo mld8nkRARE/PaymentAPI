@@ -1,10 +1,10 @@
 ﻿using Yandex.Checkout.V3;
 namespace PaymentAPI.DTO
 {
-    public class PaymentRequest
+    public record PaymentRequest
     {
-        public Amount Amount { get; set; } = new();
-        public string Description { get; set; } = string.Empty;
-
+        public required decimal Amount { get; init; }
+        public required string Currency { get; init; }
+        public required string? Description { get; init; }
     }
 }

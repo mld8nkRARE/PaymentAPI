@@ -1,9 +1,16 @@
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
+using PaymentAPI.Infrastructure;
 using PaymentAPI.Interfaces;
 using PaymentAPI.Services;
 using PaymentAPI.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+    .UseSnakeCaseNamingConvention();
+});
 builder.Services.Configure<YookassaSettings>(builder.Configuration.GetSection("YookassaSettings"));
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();

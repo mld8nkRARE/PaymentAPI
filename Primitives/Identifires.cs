@@ -1,9 +1,16 @@
-﻿namespace PaymentAPI.Primitives
+﻿using StronglyTypedIds;
+namespace PaymentAPI.Primitives
 {
-    public readonly record struct UserId(Guid id);
-    public readonly record struct PaymentId(Guid id);
-    public readonly record struct ExternalPaymentId(Guid id);
-    public readonly record struct OrderId(Guid id);
-    public readonly record struct ProductId(Guid id);
-    public readonly record struct OrderItemId(Guid id);
+    [StronglyTypedId(Template.Guid, "guid-efcore")]
+    public readonly partial struct UserId;
+    [StronglyTypedId(Template.Guid, "guid-efcore")]
+    public readonly partial struct PaymentId;
+    [StronglyTypedId(Template.Guid, "guid-efcore")]
+    public readonly partial struct ExternalPaymentId;
+    [StronglyTypedId(Template.Guid, "guid-efcore")]
+    public readonly partial struct OrderId;
+    [StronglyTypedId(Template.Guid, "guid-efcore")]
+    public readonly partial struct ProductId;
+    [StronglyTypedId(Template.Guid, "guid-efcore")]
+    public readonly partial struct OrderItemId;
 }

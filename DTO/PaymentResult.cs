@@ -2,12 +2,13 @@
 using PaymentAPI.Primitives;
 namespace PaymentAPI.DTO
 {
-    public class PaymentResult
+    public record PaymentResult
     {
-        public PaymentStatus Status { get; set; }
-        public PaymentId PaymentId { get; set; }
-        public required Amount Amount { get; init; }
-        public required string ConfirmationUrl { get; init; }
-        public DateTime CreatedAt { get; init; }
+        public required string Status { get; init; }
+        public required string ExternalPaymentId { get; init; }
+        public required decimal Amount { get; init; }
+        public required string Currency { get; init; }
+        public required string? ConfirmationUrl { get; init; }
+        public required DateTime CreatedAt { get; init; }
     }
 }
