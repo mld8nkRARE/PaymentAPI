@@ -9,7 +9,6 @@ namespace PaymentAPI.Infrastructure.Configurations
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            builder.ToTable("Users");
             builder.HasKey(u => u.Id);
             builder.Property(u => u.Id).HasConversion<UserId.EfCoreValueConverter>()
                 .ValueGeneratedNever();

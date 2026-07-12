@@ -8,11 +8,11 @@ namespace PaymentAPI.Infrastructure.Configurations
     {
         public void Configure(EntityTypeBuilder<Payment> builder)
         {
-            builder.ToTable("Payments");
             builder.HasKey(p => p.Id);
             builder.Property(p => p.Id).HasConversion<PaymentId.EfCoreValueConverter>()
                 .ValueGeneratedNever();
-
+            builder.Property(p => p.ExternalPaymentId).HasConversion<ExternalPaymentId.EfCoreValueConverter>()
+                .ValueGeneratedNever();
 
             builder.Property(p => p.Status)
                 .HasConversion<string>()
@@ -25,7 +25,7 @@ namespace PaymentAPI.Infrastructure.Configurations
 
             builder.HasIndex(p => p.ExternalPaymentId)
                 .IsUnique()
-                .HasFilter("\"ExternalPaymentId\" IS NOT NULL");
+                .HasFilter("\"external_payment_id\" IS NOT NULL");
 
             builder.HasOne(p => p.Order)
                  .WithOne(o => o.Payment)

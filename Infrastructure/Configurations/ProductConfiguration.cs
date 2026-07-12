@@ -8,7 +8,6 @@ namespace PaymentAPI.Infrastructure.Configurations
     {
         public void Configure(EntityTypeBuilder<Product> builder)
         {
-            builder.ToTable("Products");
             builder.HasKey(p => p.Id);
             builder.Property(p => p.Id).HasConversion<ProductId.EfCoreValueConverter>()
                 .ValueGeneratedNever();
@@ -19,8 +18,6 @@ namespace PaymentAPI.Infrastructure.Configurations
 
             builder.ToTable(t => t.HasCheckConstraint("CK_Products_StockQuantity_NonNegative",
             "\"stock_quantity\" >= 0"));
-
-
         }
     }
 }
