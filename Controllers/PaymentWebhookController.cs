@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using PaymentAPI.DTO;
 using PaymentAPI.Interfaces;
 using System.Text.Json;
-using PaymentAPI.DTO;
 namespace PaymentAPI.Controllers
 {
+    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class PaymentWebhookController : ControllerBase
