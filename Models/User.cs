@@ -1,31 +1,25 @@
-﻿using PaymentAPI.Primitives;
+﻿using Microsoft.AspNetCore.Identity;
+using PaymentAPI.Primitives;
 
 namespace PaymentAPI.Models
 {
-    public class User
+    public class User : IdentityUser<UserId>
     {
-        public UserId Id { get; private init; }
-        public string FullName { get; private init; } = null!;
-        public string Email { get; private set; } = null!;
-        public string? PhoneNumber { get; private set; }
-        public string PasswordHash { get; private init; } = null!;
-
+        public string? FullName { get; private init; }
         private readonly List<Order> _orders  = new();
         private readonly List<Payment> _payments = new();
         public IReadOnlyCollection<Order> Orders => _orders.AsReadOnly();
         public IReadOnlyCollection<Payment> Payments => _payments.AsReadOnly();
         protected User() { }
-        public User(string fullName, string email, string passwordHash, string? phoneNumber = null)
+        public User( string email, string? fullName = null, string? phoneNumber = null)
         {
-            ArgumentNullException.ThrowIfNullOrEmpty(fullName, nameof(fullName));
             ArgumentNullException.ThrowIfNullOrEmpty(email, nameof(email));
-            ArgumentNullException.ThrowIfNullOrEmpty(passwordHash, nameof(passwordHash));
 
             Id = UserId.New();
             FullName = fullName;
+            UserName = email;
             Email = email;
             PhoneNumber = phoneNumber;
-            PasswordHash = passwordHash;
         }
         public void AddOrder(Order order)
         {
