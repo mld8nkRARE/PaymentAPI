@@ -26,6 +26,7 @@ namespace PaymentAPI.Controllers
             _configuration = configuration;
             _jwtService = jwtService;
         }
+
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody]UserAuthRequest userAuthRequest)
         {

@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Security.Cryptography.X509Certificates;
-using PaymentAPI.DTO;
+﻿using PaymentAPI.DTO;
 using System.Text.Json;
 
 namespace PaymentAPI.Interfaces

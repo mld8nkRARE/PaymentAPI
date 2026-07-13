@@ -18,6 +18,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
     .UseSnakeCaseNamingConvention();
 });
+
 builder.Services.AddIdentity<User, IdentityUserRole<UserId>>(options => 
 {
     options.Password.RequiredLength = 12;
@@ -29,27 +30,27 @@ builder.Services.AddIdentity<User, IdentityUserRole<UserId>>(options =>
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
 }).AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         var jwtSettiings = builder.Configuration.GetSection("Jwt");
         options.TokenValidationParameters = new TokenValidationParameters
         {
-
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtSettiings["iss"],
             ValidAudience = jwtSettiings["aud"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes((builder.Configuration.GetSection("Jwt")["key"])))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettiings["key"]))
         };
         options.RequireHttpsMetadata = true;
         options.MapInboundClaims = false;
     });
 builder.Services.AddAuthorization(options =>
 {
-options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+    options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
 });
 builder.Services.Configure<YookassaSettings>(builder.Configuration.GetSection("YookassaSettings"));
 builder.Services.AddControllers();
