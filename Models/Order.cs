@@ -12,7 +12,7 @@ namespace PaymentAPI.Models
         public User User { get; private set; } = null!;
         public Payment? Payment { get; private set; }
         [Timestamp]
-        public uint Xmin {  get; private set; }
+        public uint Xmin { get; private set; }
         private readonly List<OrderItem> _orderItems = new();
         public IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
         protected Order() { }

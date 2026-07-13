@@ -29,7 +29,7 @@ namespace PaymentAPI.Models
         {
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantityToRemove, nameof(quantityToRemove));
             if (StockQuantity < quantityToRemove)
-                throw new InvalidOperationException("$Недостаточно товаров на складе");
+                throw new InvalidOperationException("Недостаточно товаров на складе");
 
             StockQuantity -= quantityToRemove;
             
