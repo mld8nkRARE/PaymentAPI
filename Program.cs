@@ -19,7 +19,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     .UseSnakeCaseNamingConvention();
 });
 
-builder.Services.AddIdentity<User, IdentityUserRole<UserId>>(options => 
+builder.Services.AddIdentity<User, IdentityRole<UserId>>(options => 
 {
     options.Password.RequiredLength = 12;
     options.Password.RequireDigit = true;
@@ -57,6 +57,7 @@ builder.Services.AddControllers();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IPaymentGateway, YookassaGateway>();
+builder.Services.AddScoped<CreatePaymentHandler>();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;

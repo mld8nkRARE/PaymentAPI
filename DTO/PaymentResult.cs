@@ -1,5 +1,5 @@
-﻿using Yandex.Checkout.V3;
 using PaymentAPI.Primitives;
+
 namespace PaymentAPI.DTO
 {
     public record PaymentResult
