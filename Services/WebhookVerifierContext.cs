@@ -12,18 +12,19 @@ namespace PaymentAPI.Services
             _sourceIpVerifiers = sourceIpVerifiers.ToDictionary(k => k.ProviderName,StringComparer.OrdinalIgnoreCase);
             _signatureVerifiers = signatureVerifiers.ToDictionary(k => k.ProviderName,StringComparer.OrdinalIgnoreCase);
         }
-        public async Task<bool> VerifyAsync(string provider, HttpContext httpContext)
+        public async Task<bool> VerifyAsync(string provider, HttpContext httpContext, string rawBody)
         {
             if (!_sourceIpVerifiers.TryGetValue(provider, out var sourceIpVerifier)
                 || !_signatureVerifiers.TryGetValue(provider, out var signatureVerifier))
             {
-                throw new ArgumentException("Провайдер не поддерживается", nameof(provider));
+                throw new ArgumentException($"Провайдер {provider} не поддерживается", nameof(provider));
             }
+
             if (!sourceIpVerifier.VerifySourceIp(httpContext))
             {
                 return false;
             }
-            return await signatureVerifier.VerifySignatureAsync(httpContext);
+            return await signatureVerifier.VerifySignatureAsync(httpContext, rawBody);
         }
     }
 }

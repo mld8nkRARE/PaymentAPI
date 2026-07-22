@@ -3,6 +3,6 @@
     public interface ISignatureVerifier
     {
         string ProviderName {  get; }
-        Task<bool> VerifySignatureAsync(HttpContext httpContext);
+        Task<bool> VerifySignatureAsync(HttpContext httpContext, string rawBody);
     }
 }
