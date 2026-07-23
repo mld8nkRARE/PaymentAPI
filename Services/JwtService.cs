@@ -1,4 +1,4 @@
-﻿using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Tokens;
 using PaymentAPI.Interfaces;
 using PaymentAPI.Models;
 using System.IdentityModel.Tokens.Jwt;
@@ -25,15 +25,15 @@ namespace PaymentAPI.Services
                 new Claim("email", user.Email),
                 new Claim("role", "User")
             };
-            var token =  new JwtSecurityToken(
+            var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:iss"],
                 audience: _configuration["Jwt:aud"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(int.Parse(_configuration["Jwt:exp"])),
                 signingCredentials: credentials
             );
-            ArgumentNullException.ThrowIfNull(token, nameof(token));
-            return token.ToString();
+            var handler = new JwtSecurityTokenHandler();
+            return handler.WriteToken(token);
         }
         
     }

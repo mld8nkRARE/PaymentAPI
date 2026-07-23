@@ -7,6 +7,6 @@ namespace PaymentAPI.DTO
     {
         public required string Provider { get; init; }
         public required JsonElement PaymentData { get; init; }
-        public OrderId? OrderId { get; init; }
+        public required OrderId OrderId { get; init; }
     }
 }
