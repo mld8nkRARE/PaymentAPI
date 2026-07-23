@@ -1,45 +1,41 @@
-using PaymentAPI.DTO;
+﻿using PaymentAPI.DTO;
 using PaymentAPI.Infrastructure;
+using PaymentAPI.Interfaces;
 using PaymentAPI.Models;
 using PaymentAPI.Primitives;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace PaymentAPI.Services
 {
     public class WebhookHandler
     {
         private readonly ApplicationDbContext _db;
+        private readonly Dictionary<string, IPaymentGateway> _gateways;
 
-        public WebhookHandler(ApplicationDbContext db)
+        public WebhookHandler(ApplicationDbContext db, IEnumerable<IPaymentGateway> gateways)
         {
             _db = db;
+            _gateways = gateways.ToDictionary(g => g.ProviderName, StringComparer.OrdinalIgnoreCase);
         }
 
-        public async Task HandleAsync(PaymentWebhookRequest request)
+        public async Task HandleAsync(string provider, JsonElement webhookBody)
         {
-            var externalId = request.PaymentObject.GetProperty("id").GetString()
-                ?? throw new ArgumentException("Отсутствует id в webhook");
+            if (!_gateways.TryGetValue(provider, out var gateway))
+                throw new NotSupportedException($"Провайдер {provider} не поддерживается");
 
-            if (!Guid.TryParse(externalId, out var externalGuid))
-                throw new ArgumentException($"Некорректный формат id: {externalId}");
+            var result = await gateway.HandleWebhookAsync(webhookBody);
 
             var payment = await _db.Payments
                 .FirstOrDefaultAsync(p => p.ExternalPaymentId != null
-                    && p.ExternalPaymentId == new ExternalPaymentId(externalGuid))
-                ?? throw new InvalidOperationException($"Платёж {externalId} не найден");
+                    && p.ExternalPaymentId == new ExternalPaymentId(result.ExternalPaymentId))
+                ?? throw new InvalidOperationException($"Платёж {result.ExternalPaymentId} не найден в БД");
 
-            var status = MapStatus(request.Event);
-            payment.ChangeStatus(status);
+            if (payment.Status == result.Status)
+                return;
+
+            payment.ChangeStatus(result.Status);
             await _db.SaveChangesAsync();
         }
-
-        private static PaymentStatus MapStatus(string webhookEvent) => webhookEvent switch
-        {
-            "payment.waiting_for_capture" => PaymentStatus.WaitingForCapture,
-            "payment.succeeded" => PaymentStatus.Succeeded,
-            "payment.canceled" => PaymentStatus.Cancelled,
-            "payment.refunded" => PaymentStatus.Refunded,
-            _ => throw new NotSupportedException($"Неизвестное событие: {webhookEvent}")
-        };
     }
 }

@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using PaymentAPI.DTO;
 using PaymentAPI.Interfaces;
 using PaymentAPI.Settings;
@@ -50,7 +50,8 @@ namespace PaymentAPI.Services
             };
 
             Yandex.Checkout.V3.Payment payment = await _client.CreatePaymentAsync(newPayment, idempotenceKey);
-
+            var get = await _client.GetPaymentAsync(payment.Id);
+            
             return new PaymentResult
             {
                 Status = payment.Status.ToString(),
@@ -60,6 +61,16 @@ namespace PaymentAPI.Services
                 ConfirmationUrl = payment.Confirmation.ConfirmationUrl,
                 CreatedAt = payment.CreatedAt
             };
+        }
+
+        public async Task<WebhookResult> HandleWebhookAsync(JsonElement webhookBody)
+        {
+            var id = webhookBody.GetProperty("object").GetProperty("id").GetString()
+                ?? throw new ArgumentException("Отсутствует id в webhook");
+
+            var paymentFromApi = await _client.GetPaymentAsync(id);
+            var status = (PaymentAPI.Primitives.PaymentStatus)(int)paymentFromApi.Status;
+            return new WebhookResult(id, status);
         }
     }
 }
