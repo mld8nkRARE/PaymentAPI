@@ -1,4 +1,4 @@
-using PaymentAPI.DTO;
+﻿using PaymentAPI.DTO;
 using PaymentAPI.Infrastructure;
 using PaymentAPI.Interfaces;
 using PaymentAPI.Primitives;
@@ -33,7 +33,7 @@ namespace PaymentAPI.Services
                 externalResult.Amount,
                 externalResult.Currency,
                 description,
-                new ExternalPaymentId(Guid.Parse(externalResult.ExternalPaymentId)));
+                new ExternalPaymentId(externalResult.ExternalPaymentId));
 
             _db.Payments.Add(payment);
             await _db.SaveChangesAsync();
