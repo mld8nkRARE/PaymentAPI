@@ -1,30 +1,24 @@
-﻿using PaymentAPI.Interfaces;
+using PaymentAPI.Interfaces;
 
 namespace PaymentAPI.Services
 {
     public class WebhookVerifierContext
     {
-        private Dictionary<string, ISourceIpVerifier> _sourceIpVerifiers;
-        private Dictionary<string, ISignatureVerifier> _signatureVerifiers;
-        public WebhookVerifierContext(IEnumerable<ISourceIpVerifier> sourceIpVerifiers,
-            IEnumerable<ISignatureVerifier> signatureVerifiers)
+        private readonly Dictionary<string, ISourceIpVerifier> _sourceIpVerifiers;
+
+        public WebhookVerifierContext(IEnumerable<ISourceIpVerifier> sourceIpVerifiers)
         {
-            _sourceIpVerifiers = sourceIpVerifiers.ToDictionary(k => k.ProviderName,StringComparer.OrdinalIgnoreCase);
-            _signatureVerifiers = signatureVerifiers.ToDictionary(k => k.ProviderName,StringComparer.OrdinalIgnoreCase);
+            _sourceIpVerifiers = sourceIpVerifiers.ToDictionary(k => k.ProviderName, StringComparer.OrdinalIgnoreCase);
         }
-        public async Task<bool> VerifyAsync(string provider, HttpContext httpContext, string rawBody)
+
+        public Task<bool> VerifyAsync(string provider, HttpContext httpContext)
         {
-            if (!_sourceIpVerifiers.TryGetValue(provider, out var sourceIpVerifier)
-                || !_signatureVerifiers.TryGetValue(provider, out var signatureVerifier))
+            if (!_sourceIpVerifiers.TryGetValue(provider, out var sourceIpVerifier))
             {
                 throw new ArgumentException($"Провайдер {provider} не поддерживается", nameof(provider));
             }
 
-            if (!sourceIpVerifier.VerifySourceIp(httpContext))
-            {
-                return false;
-            }
-            return await signatureVerifier.VerifySignatureAsync(httpContext, rawBody);
+            return Task.FromResult(sourceIpVerifier.VerifySourceIp(httpContext));
         }
     }
 }

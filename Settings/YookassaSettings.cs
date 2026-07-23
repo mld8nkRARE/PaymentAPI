@@ -1,4 +1,4 @@
-﻿namespace PaymentAPI.Settings
+namespace PaymentAPI.Settings
 {
     public class YookassaSettings
     {
@@ -6,6 +6,5 @@
         public string SecretKey { get; set; } = String.Empty;
         public string ReturnUrl { get; set; } = String.Empty;
         public string[] AllowedWebhooksIPs { get; set; } = Array.Empty<string>();
-        public string PublicKeyBase64 {  get; set; } = String.Empty;
     }
 }

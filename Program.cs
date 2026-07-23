@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.HttpOverrides;
+﻿using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PaymentAPI.Infrastructure;
@@ -31,7 +31,11 @@ builder.Services.AddIdentity<User, IdentityRole<UserId>>(options =>
 }).AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
     .AddJwtBearer(options =>
     {
         var jwtSettiings = builder.Configuration.GetSection("Jwt");
@@ -45,7 +49,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = jwtSettiings["aud"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettiings["key"]))
         };
-        options.RequireHttpsMetadata = true;
+        options.RequireHttpsMetadata = false;
         options.MapInboundClaims = false;
     });
 builder.Services.AddAuthorization(options =>
@@ -60,10 +64,7 @@ builder.Services.AddScoped<IPaymentGateway, YookassaGateway>();
 builder.Services.AddScoped<CreatePaymentHandler>();
 builder.Services.AddScoped<WebhookHandler>();
 builder.Services.AddScoped<WebhookVerifierContext>();
-builder.Services.AddScoped<WebhookParserContext>();
 builder.Services.AddScoped<ISourceIpVerifier, YookassaIpVerifier>();
-builder.Services.AddScoped<ISignatureVerifier, YookassaSignatureVerifier>();
-builder.Services.AddScoped<IWebhookParser, YookassaWebhookParser>();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
