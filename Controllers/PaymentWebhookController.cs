@@ -1,44 +1,34 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using PaymentAPI.DTO;
-using PaymentAPI.Interfaces;
+using PaymentAPI.Services;
 using System.Text.Json;
+
 namespace PaymentAPI.Controllers
 {
     [AllowAnonymous]
-    [Route("api/[controller]")]
+    [Route("api/payment_webhook")]
     [ApiController]
     public class PaymentWebhookController : ControllerBase
     {
-        private readonly IPaymentWebhook _paymentWebhook;
-        PaymentWebhookController(IPaymentWebhook paymentWebhook)
+        private readonly WebhookVerifierContext _webhookVerifierContext;
+        private readonly WebhookHandler _webhookHandler;
+
+        public PaymentWebhookController(
+            WebhookVerifierContext webhookVerifierContext,
+            WebhookHandler webhookHandler)
         {
-            _paymentWebhook = paymentWebhook;
+            _webhookVerifierContext = webhookVerifierContext;
+            _webhookHandler = webhookHandler;
         }
-        [HttpPost]
-        public async Task<IActionResult> HandleWebhook([FromBody] JsonElement bodyRequest)
+
+        [HttpPost("{provider}")]
+        public async Task<IActionResult> HandleWebhook(string provider, [FromBody] JsonElement body)
         {
-             
-            try
-            {
-                bool isRequestFromVerifySource =  _paymentWebhook.VerifyWebhookAsync(HttpContext);
-                if (!isRequestFromVerifySource)
-                {
-                    return Unauthorized();
-                }
-                WebhookData? webhookData =  _paymentWebhook.ParseWebhookAsync(bodyRequest);
-                if(webhookData == null)
-                {
-                    return BadRequest();
-                }
-                await _paymentWebhook.ProcessWebhookAsync(webhookData);
-                return Ok();
-            }
-            catch
-            {
-                return BadRequest();
-            }
+            if (!await _webhookVerifierContext.VerifyAsync(provider, HttpContext))
+                return Unauthorized();
+
+            await _webhookHandler.HandleAsync(provider, body);
+            return Ok();
         }
     }
 }

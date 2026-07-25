@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PaymentAPI.Models;
 using PaymentAPI.Primitives;
@@ -17,6 +17,13 @@ namespace PaymentAPI.Infrastructure
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+            modelBuilder.Entity<IdentityRole<UserId>>(builder =>
+            {
+                builder.Property(r => r.Id)
+                    .HasConversion<UserId.EfCoreValueConverter>()
+                    .ValueGeneratedNever();
+            });
         }
     }
 }

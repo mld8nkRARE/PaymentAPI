@@ -24,7 +24,7 @@ namespace PaymentAPI.Models
             UserId = userId;
             TotalPrice = 0;
         }
-        public void AddItem(Product product,int quantity)
+        public void AddItem(Product product,int quantity = 1)
         {
             ArgumentNullException.ThrowIfNull(product);
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity);

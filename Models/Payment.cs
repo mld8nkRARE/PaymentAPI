@@ -1,4 +1,4 @@
-﻿using PaymentAPI.Primitives;
+using PaymentAPI.Primitives;
 
 namespace PaymentAPI.Models
 {
@@ -18,7 +18,8 @@ namespace PaymentAPI.Models
         public Order Order { get; private set; } = null!;
         public User User { get; private set; } = null!;
         protected Payment() { }
-        public Payment(OrderId orderId,UserId userId, decimal amount, string currency, string? description = null)
+        public Payment(OrderId orderId, UserId userId, decimal amount, string currency,
+            string? description = null, ExternalPaymentId? externalPaymentId = null)
         {
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(amount, nameof(amount));
             ArgumentNullException.ThrowIfNullOrEmpty(currency, nameof(currency));
@@ -26,7 +27,7 @@ namespace PaymentAPI.Models
             Id = PaymentId.New();
             OrderId = orderId;
             UserId = userId;
-
+            ExternalPaymentId = externalPaymentId;
             Amount = amount;
             Currency = currency;
             CreatedAt = DateTime.UtcNow;

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.HttpOverrides;
+﻿using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PaymentAPI.Infrastructure;
@@ -19,7 +19,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     .UseSnakeCaseNamingConvention();
 });
 
-builder.Services.AddIdentity<User, IdentityUserRole<UserId>>(options => 
+builder.Services.AddIdentity<User, IdentityRole<UserId>>(options => 
 {
     options.Password.RequiredLength = 12;
     options.Password.RequireDigit = true;
@@ -31,7 +31,11 @@ builder.Services.AddIdentity<User, IdentityUserRole<UserId>>(options =>
 }).AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
     .AddJwtBearer(options =>
     {
         var jwtSettiings = builder.Configuration.GetSection("Jwt");
@@ -45,7 +49,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = jwtSettiings["aud"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettiings["key"]))
         };
-        options.RequireHttpsMetadata = true;
+        options.RequireHttpsMetadata = false;
         options.MapInboundClaims = false;
     });
 builder.Services.AddAuthorization(options =>
@@ -57,6 +61,10 @@ builder.Services.AddControllers();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IPaymentGateway, YookassaGateway>();
+builder.Services.AddScoped<CreatePaymentHandler>();
+builder.Services.AddScoped<WebhookHandler>();
+builder.Services.AddScoped<WebhookVerifierContext>();
+builder.Services.AddScoped<ISourceIpVerifier, YookassaIpVerifier>();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;

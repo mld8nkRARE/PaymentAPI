@@ -1,4 +1,4 @@
-﻿namespace PaymentAPI.Settings
+namespace PaymentAPI.Settings
 {
     public class YookassaSettings
     {

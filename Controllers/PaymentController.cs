@@ -1,37 +1,40 @@
-﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PaymentAPI.DTO;
-using PaymentAPI.Interfaces;
+using PaymentAPI.Primitives;
+using PaymentAPI.Services;
 
 namespace PaymentAPI.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class PaymentController : ControllerBase
     {
-        private readonly IPaymentGateway _paymentGateway;
+        private readonly CreatePaymentHandler _handler;
 
-        public PaymentController(IPaymentGateway paymentGateway)
+        public PaymentController(CreatePaymentHandler handler)
         {
-            _paymentGateway = paymentGateway;
+            _handler = handler;
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreatePayment([FromBody] PaymentRequest request,
-            [FromHeader(Name = "Idempotence-Key")]string idempotenceKey) //для idempotenceKey рекомендуется использовать V4 UUID
+        public async Task<IActionResult> CreatePayment(
+            [FromBody] CreatePaymentRequest request,
+            [FromHeader(Name = "Idempotence-Key")] string idempotenceKey)
         {
             try
             {
-                PaymentResult result = await _paymentGateway.CreatePayment(request, idempotenceKey);
+                var userId = new UserId(Guid.Parse(User.FindFirst("sub")!.Value));
+                var result = await _handler.HandleAsync(request, userId, idempotenceKey);
                 return Ok(result);
+            }
+            catch (NotSupportedException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch
             {
                 return BadRequest();
             }
         }
-        
-
     }
 }
