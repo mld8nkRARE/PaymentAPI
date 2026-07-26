@@ -59,6 +59,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.Configure<YookassaSettings>(builder.Configuration.GetSection("YookassaSettings"));
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IPaymentGateway, YookassaGateway>();
 builder.Services.AddScoped<CreatePaymentHandler>();
