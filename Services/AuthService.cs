@@ -22,7 +22,7 @@ namespace PaymentAPI.Services
             _jwtService = jwtService;
             _db = db;
         }
-        public async Task<UserAuthResponse> RegisterAsync(UserAuthRequest request)
+        public async Task<AuthUserResponse> RegisterAsync(AuthUserRequest request)
         {
             var user = new User(request.Email);
             var result = await _userManager.CreateAsync(user, request.Password);
@@ -35,7 +35,7 @@ namespace PaymentAPI.Services
 
             return userAuthResponse;
         }
-        public async Task<UserAuthResponse> LoginAsync(UserAuthRequest request)
+        public async Task<AuthUserResponse> LoginAsync(AuthUserRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user is null)
@@ -55,7 +55,7 @@ namespace PaymentAPI.Services
 
             return userAuthResponse;
         }
-        public async Task<UserAuthResponse> RefreshTokenAsync(UserRefreshAuthTokenRequest refreshToken)
+        public async Task<AuthUserResponse> RefreshTokenAsync(AuthRefreshRequest refreshToken)
         {
             var oldToken = await _db.RefreshTokens.FirstOrDefaultAsync(t => t.Token == refreshToken.oldToken)
                 ?? throw new InvalidDataException("Токен не найден");

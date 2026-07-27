@@ -1,6 +1,6 @@
 ﻿namespace PaymentAPI.DTO
 {
-    public record UserAuthResponse
+    public record AuthUserResponse
     (
         string AccessToken,
         string TokenType,

@@ -4,6 +4,6 @@ namespace PaymentAPI.Interfaces
 {
     public interface IJwtService
     {
-        UserAuthResponse GenerateTokens(User user);
+        AuthUserResponse GenerateTokens(User user);
     }
 }

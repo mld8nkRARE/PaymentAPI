@@ -4,6 +4,7 @@ namespace PaymentAPI.DTO
 {
     public record PaymentResult
     {
+        public required string PaymentId { get; init; }
         public required string Status { get; init; }
         public required string ExternalPaymentId { get; init; }
         public required decimal Amount { get; init; }

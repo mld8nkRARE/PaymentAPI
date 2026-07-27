@@ -15,7 +15,7 @@ namespace PaymentAPI.Services
             _db = db;
         }
 
-        public async Task<OrderResponse> CreateOrderAsync(CreateOrderRequest request, UserId userId)
+        public async Task<OrderResponse> CreateOrderAsync(OrderCreateRequest request, UserId userId)
         {
             var order = new Order(userId);
 

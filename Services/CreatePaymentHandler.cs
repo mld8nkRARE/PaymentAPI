@@ -17,7 +17,7 @@ namespace PaymentAPI.Services
             _db = db;
         }
 
-        public async Task<PaymentResult> HandleAsync(CreatePaymentRequest request, UserId userId, string idempotenceKey)
+        public async Task<PaymentResult> HandleAsync(PaymentCreateRequest request, UserId userId, string idempotenceKey)
         {
             if (!_gateways.TryGetValue(request.Provider, out var gateway))
                 throw new NotSupportedException($"Провайдер {request.Provider} не поддерживается");

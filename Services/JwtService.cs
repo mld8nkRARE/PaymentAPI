@@ -18,7 +18,7 @@ namespace PaymentAPI.Services
             _configuration = configuration;
         }
 
-        public UserAuthResponse GenerateTokens(User user)
+        public AuthUserResponse GenerateTokens(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:key"]));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -44,7 +44,7 @@ namespace PaymentAPI.Services
             var accessTokenExpireIn = (int) (token.ValidTo - DateTime.UtcNow).TotalSeconds ;
             var refreshTokenExpireIn = GetUserRefreshTokenExpireInSeconds();
 
-            return new UserAuthResponse(accessToken, "Bearer", refreshToken, accessTokenExpireIn,refreshTokenExpireIn);
+            return new AuthUserResponse(accessToken, "Bearer", refreshToken, accessTokenExpireIn,refreshTokenExpireIn);
         }
         private string GenerateRefreshToken() 
         {
