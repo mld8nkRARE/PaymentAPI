@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PaymentAPI.Infrastructure;
@@ -11,9 +12,11 @@ using PaymentAPI.Infrastructure;
 namespace PaymentAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260726173250_AddProductIsDeleted")]
+    partial class AddProductIsDeleted
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -317,6 +320,10 @@ namespace PaymentAPI.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
+                    b.Property<Guid?>("UserId1")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id1");
+
                     b.HasKey("Id")
                         .HasName("pk_payments");
 
@@ -331,6 +338,9 @@ namespace PaymentAPI.Migrations
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_payments_user_id");
+
+                    b.HasIndex("UserId1")
+                        .HasDatabaseName("ix_payments_user_id1");
 
                     b.ToTable("payments", (string)null);
                 });
@@ -691,6 +701,11 @@ namespace PaymentAPI.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_payments_asp_net_users_user_id");
 
+                    b.HasOne("PaymentAPI.Models.User", null)
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId1")
+                        .HasConstraintName("fk_payments_asp_net_users_user_id1");
+
                     b.Navigation("Order");
 
                     b.Navigation("User");
@@ -699,7 +714,7 @@ namespace PaymentAPI.Migrations
             modelBuilder.Entity("PaymentAPI.Models.RefreshToken", b =>
                 {
                     b.HasOne("PaymentAPI.Models.User", "User")
-                        .WithMany("RefreshTokens")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()

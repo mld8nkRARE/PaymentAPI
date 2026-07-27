@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PaymentAPI.DTO;
+using PaymentAPI.Models;
 using PaymentAPI.Primitives;
 using PaymentAPI.Services;
 using System.Security.Claims;
@@ -19,15 +20,32 @@ namespace PaymentAPI.Controllers
             _orderService = orderService;
         }
 
+        /// <summary>
+        /// Создает новый заказ.
+        /// </summary>
+        /// <param name="request">Данные для создания заказа.</param>
+        /// <returns>Созданный заказ.</returns>
         [HttpPost]
-        public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(OrderResponse))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> CreateOrder([FromBody] OrderCreateRequest request)
         {
             var userId = GetUserId();
             var order = await _orderService.CreateOrderAsync(request, userId);
             return Ok(order);
         }
 
+        /// <summary>
+        /// Отменяет существующий заказ.
+        /// </summary>
+        /// <param name="id">Идентификатор заказа для отмены.</param>
+        /// <returns>Статус выполнения операции.</returns>
         [HttpPost("{id}/cancel")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> CancelOrder(Guid id)
         {
             var userId = GetUserId();

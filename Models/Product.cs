@@ -7,6 +7,7 @@ namespace PaymentAPI.Models
         public string Name { get; private set; } = null!;
         public decimal Price { get; private set; }
         public string? Description { get; private set; }
+        public bool IsDeleted { get; private set; }
         public int StockQuantity { get; private set; }
         protected Product() { }
         public Product(string name, decimal price, string? description = null, int stockQuantity = 0)
@@ -43,6 +44,11 @@ namespace PaymentAPI.Models
         {
             Description = description;
         }
+        public void MarkAsDeleted()
+        {
+            IsDeleted = true;
+        }
+
         public void ChangeName(string name)
         {
             ArgumentNullException.ThrowIfNullOrEmpty(name, nameof(name));

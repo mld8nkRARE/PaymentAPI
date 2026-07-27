@@ -15,7 +15,7 @@ namespace PaymentAPI.Services
             _db = db;
         }
 
-        public async Task<OrderResponse> CreateOrderAsync(CreateOrderRequest request, UserId userId)
+        public async Task<OrderResponse> CreateOrderAsync(OrderCreateRequest request, UserId userId)
         {
             var order = new Order(userId);
 
@@ -23,6 +23,9 @@ namespace PaymentAPI.Services
             {
                 var product = await _db.Products.FindAsync(item.ProductId)
                     ?? throw new ArgumentException($"Продукт {item.ProductId} не найден");
+
+                if (product.IsDeleted)
+                    throw new ArgumentException($"Продукт {item.ProductId} был удалён");
 
                 order.AddItem(product, item.Quantity);
             }

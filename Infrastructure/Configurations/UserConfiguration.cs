@@ -23,6 +23,7 @@ namespace PaymentAPI.Infrastructure.Configurations
 
             builder.Navigation(u => u.Orders).UsePropertyAccessMode(PropertyAccessMode.Field);
             builder.Navigation(u => u.Payments).UsePropertyAccessMode(PropertyAccessMode.Field);
+            builder.Navigation(u => u.RefreshTokens).UsePropertyAccessMode(PropertyAccessMode.Field);
         }
     }
 }

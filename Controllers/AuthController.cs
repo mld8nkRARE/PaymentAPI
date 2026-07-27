@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PaymentAPI.DTO;
 using PaymentAPI.Interfaces;
-using PaymentAPI.Models;
 
 namespace PaymentAPI.Controllers
 {
@@ -12,57 +10,52 @@ namespace PaymentAPI.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        //ILogger
-        private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
-        private readonly IConfiguration _configuration;
-        private readonly IJwtService _jwtService;
+        private readonly IAuthService _authService;
 
-        public AuthController(UserManager<User> userManager, SignInManager<User> signInManager,
-            IConfiguration configuration, IJwtService jwtService)
+        public AuthController(IAuthService authService)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _configuration = configuration;
-            _jwtService = jwtService;
+            _authService = authService;
         }
 
+        /// <summary>
+        /// Регистрирует нового пользователя.
+        /// </summary>
+        /// <param name="userAuthRequest">Данные для регистрации пользователя.</param>
+        /// <returns>Токен аутентификации.</returns>
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody]UserAuthRequest userAuthRequest)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthUserResponse))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Register([FromBody] AuthUserRequest userAuthRequest)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-            var user = new User(userAuthRequest.Email);
-            var result = await _userManager.CreateAsync(user, userAuthRequest.Password);
-            if (!result.Succeeded)
-            {
-                return BadRequest(result.Errors.Select(e => e.Description));
-            }
-            var token = _jwtService.GenerateToken(user);
+            var token = await _authService.RegisterAsync(userAuthRequest);
             return Ok(token);
         }
 
+        /// <summary>
+        /// Выполняет вход пользователя и возвращает JWT-токен.
+        /// </summary>
+        /// <param name="userAuthRequest">Учетные данные пользователя.</param>
+        /// <returns>JWT-токен.</returns>
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] UserAuthRequest userAuthRequest)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> Login([FromBody] AuthUserRequest userAuthRequest)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-            var user = await _userManager.FindByEmailAsync(userAuthRequest.Email);
-            if (user is null)
-            {
-                return Unauthorized("Неверный Email или пароль");
-            }
-            var password = userAuthRequest.Password;
-            var resultPasswordSign = await _signInManager.CheckPasswordSignInAsync(user, password, true);
-            if (resultPasswordSign.Succeeded)
-            {
-                var token = _jwtService.GenerateToken(user);
-                return Ok(token);
-            }
-            else
-            {
-                return Unauthorized("Неверный Email или пароль");
-            }
+            var token = await _authService.LoginAsync(userAuthRequest);
+            return Ok(token);
+        }
+        /// <summary>
+        /// Обновляет JWT-токен с использованием токена обновления.
+        /// </summary>
+        /// <param name="oldRefreshToken">Запрос, содержащий старый токен обновления.</param>
+        /// <returns>Новый JWT-токен.</returns>
+        [HttpPost("refresh")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> RefreshToken(AuthRefreshRequest oldRefreshToken)
+        {
+            var token = await _authService.RefreshTokenAsync(oldRefreshToken);
+            return Ok(token);
         }
     }
 }

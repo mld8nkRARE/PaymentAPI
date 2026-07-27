@@ -8,8 +8,10 @@ namespace PaymentAPI.Models
         public string? FullName { get; private init; }
         private readonly List<Order> _orders  = new();
         private readonly List<Payment> _payments = new();
+        private readonly List<RefreshToken> _refreshTokens = new();
         public IReadOnlyCollection<Order> Orders => _orders.AsReadOnly();
         public IReadOnlyCollection<Payment> Payments => _payments.AsReadOnly();
+        public IReadOnlyCollection<RefreshToken> RefreshTokens => _refreshTokens.AsReadOnly();
         protected User() { }
         public User( string email, string? fullName = null, string? phoneNumber = null)
         {

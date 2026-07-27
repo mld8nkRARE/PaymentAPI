@@ -54,6 +54,7 @@ namespace PaymentAPI.Services
             
             return new PaymentResult
             {
+                PaymentId = string.Empty,
                 Status = payment.Status.ToString(),
                 ExternalPaymentId = payment.Id,
                 Amount = payment.Amount.Value,
@@ -63,14 +64,14 @@ namespace PaymentAPI.Services
             };
         }
 
-        public async Task<WebhookResult> HandleWebhookAsync(JsonElement webhookBody)
+        public async Task<PaymentWebhookResult> HandleWebhookAsync(JsonElement webhookBody)
         {
             var id = webhookBody.GetProperty("object").GetProperty("id").GetString()
                 ?? throw new ArgumentException("Отсутствует id в webhook");
 
             var paymentFromApi = await _client.GetPaymentAsync(id);
             var status = (PaymentAPI.Primitives.PaymentStatus)(int)paymentFromApi.Status;
-            return new WebhookResult(id, status);
+            return new PaymentWebhookResult(id, status);
         }
     }
 }

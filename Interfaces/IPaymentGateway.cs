@@ -7,6 +7,6 @@ namespace PaymentAPI.Interfaces
     {
         string ProviderName { get; }
         Task<PaymentResult> CreatePayment(JsonElement paymentData, string idempotenceKey);
-        Task<WebhookResult> HandleWebhookAsync(JsonElement webhookBody);
+        Task<PaymentWebhookResult> HandleWebhookAsync(JsonElement webhookBody);
     }
 }
