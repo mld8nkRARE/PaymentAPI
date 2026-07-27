@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PaymentAPI.Infrastructure;
@@ -11,9 +12,11 @@ using PaymentAPI.Infrastructure;
 namespace PaymentAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260724145933_AddRefundTable")]
+    partial class AddRefundTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -346,12 +349,6 @@ namespace PaymentAPI.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("description");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("is_deleted");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -376,53 +373,6 @@ namespace PaymentAPI.Migrations
                         });
                 });
 
-            modelBuilder.Entity("PaymentAPI.Models.RefreshToken", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<DateTime>("ExpireAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("expire_at");
-
-                    b.Property<string>("ReplacedByToken")
-                        .HasColumnType("text")
-                        .HasColumnName("replaced_by_token");
-
-                    b.Property<DateTime?>("RevokedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("revoked_at");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("token");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_refresh_tokens");
-
-                    b.HasIndex("Token")
-                        .IsUnique()
-                        .HasDatabaseName("ix_refresh_tokens_token");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_refresh_tokens_user_id");
-
-                    b.ToTable("refresh_tokens", (string)null);
-                });
-
             modelBuilder.Entity("PaymentAPI.Models.Refund", b =>
                 {
                     b.Property<Guid>("Id")
@@ -433,16 +383,6 @@ namespace PaymentAPI.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("amount");
-
-                    b.Property<string>("CancellationParty")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("cancellation_party");
-
-                    b.Property<string>("CancellationReason")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("cancellation_reason");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -455,11 +395,6 @@ namespace PaymentAPI.Migrations
                         .HasMaxLength(3)
                         .HasColumnType("character varying(3)")
                         .HasColumnName("currency");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("description");
 
                     b.Property<string>("ExternalRefundId")
                         .HasMaxLength(100)
@@ -478,14 +413,6 @@ namespace PaymentAPI.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_refunds");
-
-                    b.HasIndex("ExternalRefundId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_refunds_external_refund_id")
-                        .HasFilter("\"external_refund_id\" IS NOT NULL");
-
-                    b.HasIndex("PaymentId")
-                        .HasDatabaseName("ix_refunds_payment_id");
 
                     b.ToTable("refunds", (string)null);
                 });
@@ -696,30 +623,6 @@ namespace PaymentAPI.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("PaymentAPI.Models.RefreshToken", b =>
-                {
-                    b.HasOne("PaymentAPI.Models.User", "User")
-                        .WithMany("RefreshTokens")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_refresh_tokens_asp_net_users_user_id");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("PaymentAPI.Models.Refund", b =>
-                {
-                    b.HasOne("PaymentAPI.Models.Payment", "Payment")
-                        .WithMany()
-                        .HasForeignKey("PaymentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_refunds_payments_payment_id");
-
-                    b.Navigation("Payment");
-                });
-
             modelBuilder.Entity("PaymentAPI.Models.Order", b =>
                 {
                     b.Navigation("OrderItems");
@@ -732,8 +635,6 @@ namespace PaymentAPI.Migrations
                     b.Navigation("Orders");
 
                     b.Navigation("Payments");
-
-                    b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618
         }
