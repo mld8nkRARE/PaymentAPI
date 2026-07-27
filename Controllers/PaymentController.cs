@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using PaymentAPI.DTO;
+using PaymentAPI.Models;
 using PaymentAPI.Primitives;
 using PaymentAPI.Services;
 
@@ -16,9 +17,17 @@ namespace PaymentAPI.Controllers
             _handler = handler;
         }
 
+        /// <summary>
+        /// Создает новый платёж.
+        /// </summary>
+        /// <param name="request">Данные для создания платежа.</param>
+        /// <param name="idempotenceKey">Ключ идемпотентности для запроса.</param>
+        /// <returns>Результат создания платежа.</returns>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PaymentResult))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreatePayment(
-            [FromBody] CreatePaymentRequest request,
+            [FromBody] PaymentCreateRequest request,
             [FromHeader(Name = "Idempotence-Key")] string idempotenceKey)
         {
             try

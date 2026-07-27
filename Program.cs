@@ -1,16 +1,21 @@
-﻿using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using PaymentAPI.Infrastructure;
 using PaymentAPI.Interfaces;
 using PaymentAPI.Models;
+using PaymentAPI.Primitives;
 using PaymentAPI.Services;
 using PaymentAPI.Settings;
-using PaymentAPI.Primitives;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using Swashbuckle.AspNetCore;
+using System.Reflection;
 using System.Text;
-using Microsoft.AspNetCore.Authorization;
+
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -66,13 +71,50 @@ builder.Services.AddScoped<CreatePaymentHandler>();
 builder.Services.AddScoped<WebhookHandler>();
 builder.Services.AddScoped<WebhookVerifierContext>();
 builder.Services.AddScoped<ISourceIpVerifier, YookassaIpVerifier>();
+builder.Services.AddScoped<IRefundGateway, YookassaRefundGateway>();
+builder.Services.AddScoped<RefundHandler>();
+builder.Services.AddScoped<RefundValidator>();
+builder.Services.AddHostedService<RefundPollingService>();
+
+var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.OpenApiInfo
+    {
+        Title = "PaymentAPI",
+        Version = "v1",
+        Description = "Этот API предоставляет endpoints для управления товарами, заказами и пользователями. Поддерживает аутентификацию через JWT.",
+    });
+    options.IncludeXmlComments(xmlPath);
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Введите JWT-токен в формате: Bearer {token}",
+
+    });
+    options.AddSecurityRequirement(document =>  new OpenApiSecurityRequirement
+    {
+            {
+                new OpenApiSecuritySchemeReference("Bearer"),
+                new List<string>()
+            }
+    });
+});
+
+
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
 });
 
 var app = builder.Build();
-
+app.UseSwagger();
+app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseForwardedHeaders();
 app.UseRouting();

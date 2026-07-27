@@ -21,7 +21,15 @@ namespace PaymentAPI.Controllers
             _webhookHandler = webhookHandler;
         }
 
+        /// <summary>
+        /// Обрабатывает входящие вебхуки от платежных провайдеров.
+        /// </summary>
+        /// <param name="provider">Название платежного провайдера.</param>
+        /// <param name="body">Тело запроса вебхука в формате JSON.</param>
+        /// <returns>Статус обработки вебхука.</returns>
         [HttpPost("{provider}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> HandleWebhook(string provider, [FromBody] JsonElement body)
         {
             if (!await _webhookVerifierContext.VerifyAsync(provider, HttpContext))
