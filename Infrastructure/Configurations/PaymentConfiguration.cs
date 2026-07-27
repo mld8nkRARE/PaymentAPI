@@ -13,6 +13,10 @@ namespace PaymentAPI.Infrastructure.Configurations
                 .ValueGeneratedNever();
             builder.Property(p => p.ExternalPaymentId).HasConversion<ExternalPaymentId.EfCoreValueConverter>()
                 .ValueGeneratedNever();
+            builder.Property(p => p.UserId).HasConversion<UserId.EfCoreValueConverter>()
+                .ValueGeneratedNever();
+            builder.Property(p => p.OrderId).HasConversion<OrderId.EfCoreValueConverter>()
+                .ValueGeneratedNever();
 
             builder.Property(p => p.Status)
                 .HasConversion<string>()

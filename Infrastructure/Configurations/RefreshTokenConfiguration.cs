@@ -12,6 +12,8 @@ namespace PaymentAPI.Infrastructure.Configurations
             builder.HasKey(t => t.Id);
             builder.Property(t => t.Id).HasConversion<RefreshTokenId.EfCoreValueConverter>()
                 .ValueGeneratedNever();
+            builder.Property(t => t.UserId).HasConversion<UserId.EfCoreValueConverter>()
+                .ValueGeneratedNever();
 
             builder.Property(t => t.CreatedAt).HasDefaultValueSql("NOW()");
             builder.Property(t => t.Token).IsRequired().HasMaxLength(500);
@@ -19,7 +21,7 @@ namespace PaymentAPI.Infrastructure.Configurations
             builder.HasIndex(t => t.Token).IsUnique();
             
             builder.HasOne(t => t.User)
-                .WithMany()
+                .WithMany(u => u.RefreshTokens)
                 .HasForeignKey(t => t.UserId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
