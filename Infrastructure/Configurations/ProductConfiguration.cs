@@ -15,6 +15,7 @@ namespace PaymentAPI.Infrastructure.Configurations
             builder.Property(p => p.Name).HasMaxLength(50);
             builder.Property(p => p.Price).HasPrecision(18, 2);
             builder.Property(p => p.Description).HasMaxLength(500);
+            builder.Property(p => p.IsDeleted).HasDefaultValue(false);
 
             builder.ToTable(t => t.HasCheckConstraint("CK_Products_StockQuantity_NonNegative",
             "\"stock_quantity\" >= 0"));

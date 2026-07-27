@@ -24,6 +24,9 @@ namespace PaymentAPI.Services
                 var product = await _db.Products.FindAsync(item.ProductId)
                     ?? throw new ArgumentException($"Продукт {item.ProductId} не найден");
 
+                if (product.IsDeleted)
+                    throw new ArgumentException($"Продукт {item.ProductId} был удалён");
+
                 order.AddItem(product, item.Quantity);
             }
 
