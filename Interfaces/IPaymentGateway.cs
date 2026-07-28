@@ -1,12 +1,12 @@
-﻿using PaymentAPI.DTO;
+﻿using PaymentAPI.DTO.payment;
+using PaymentAPI.DTO.refund;
 using System.Text.Json;
 
 namespace PaymentAPI.Interfaces
 {
-    public interface IPaymentGateway
+    public interface IPaymentGateway { }
+    public interface IPaymentGateway<in TCommand> where TCommand : PaymentCreateCommand
     {
-        string ProviderName { get; }
-        Task<PaymentResult> CreatePayment(JsonElement paymentData, string idempotenceKey);
-        Task<PaymentWebhookResult> HandleWebhookAsync(JsonElement webhookBody);
+        Task<PaymentResult> CreatePaymentAsync(TCommand cmd, string idempotenceKey);
     }
 }

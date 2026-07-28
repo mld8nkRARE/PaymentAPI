@@ -1,18 +1,19 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PaymentAPI.DTO;
-using PaymentAPI.Models;
-using PaymentAPI.Primitives;
+using PaymentAPI.DTO.payment;
+using PaymentAPI.Extensions;
 using PaymentAPI.Services;
 
 namespace PaymentAPI.Controllers
 {
     [Route("api/[controller]")]
+    [AllowAnonymous]
     [ApiController]
     public class PaymentController : ControllerBase
     {
-        private readonly CreatePaymentHandler _handler;
+        private readonly PaymentHandler _handler;
 
-        public PaymentController(CreatePaymentHandler handler)
+        public PaymentController(PaymentHandler handler)
         {
             _handler = handler;
         }
@@ -32,9 +33,12 @@ namespace PaymentAPI.Controllers
         {
             try
             {
-                var userId = new UserId(Guid.Parse(User.FindFirst("sub")!.Value));
-                var result = await _handler.HandleAsync(request, userId, idempotenceKey);
-                return Ok(result);
+                if (User.TryGetUserId(out var userId))
+                {
+                    var result = await _handler.CreatePaymentAsync(request, userId, idempotenceKey);
+                    return Ok(result);
+                }
+                return BadRequest();
             }
             catch (NotSupportedException ex)
             {
