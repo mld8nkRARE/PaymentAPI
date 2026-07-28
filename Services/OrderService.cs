@@ -1,8 +1,8 @@
-﻿using PaymentAPI.DTO;
-using PaymentAPI.Infrastructure;
+﻿using PaymentAPI.Infrastructure;
 using PaymentAPI.Models;
 using PaymentAPI.Primitives;
 using Microsoft.EntityFrameworkCore;
+using PaymentAPI.DTO.order;
 
 namespace PaymentAPI.Services
 {

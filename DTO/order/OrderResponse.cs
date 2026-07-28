@@ -1,6 +1,6 @@
 ﻿using PaymentAPI.Primitives;
 
-namespace PaymentAPI.DTO
+namespace PaymentAPI.DTO.order
 {
     public record OrderResponse(
         OrderId Id,

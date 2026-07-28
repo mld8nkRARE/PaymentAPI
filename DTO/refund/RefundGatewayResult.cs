@@ -1,4 +1,4 @@
-namespace PaymentAPI.DTO
+namespace PaymentAPI.DTO.refund
 {
     public record RefundResult(
         string ExternalRefundId,
@@ -8,5 +8,4 @@ namespace PaymentAPI.DTO
         string? CancellationParty = null,
         string? CancellationReason = null);
 
-    public record RefundWebhookResult(string ExternalRefundId, string Status);
 }

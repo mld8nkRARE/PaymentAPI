@@ -1,4 +1,4 @@
-using PaymentAPI.DTO;
+using PaymentAPI.DTO.refund;
 using System.Text.Json;
 
 namespace PaymentAPI.Interfaces
