@@ -9,6 +9,7 @@ namespace PaymentAPI.Models
         public ExternalPaymentId? ExternalPaymentId { get; private set; }
         public decimal Amount { get; private init; }
         public string Currency { get; private init; } = null!;
+        public string IdempotencyKey { get; private init; }
         public DateTime CreatedAt { get; private init; }
         public string? Description { get; private set; }
 
@@ -18,7 +19,7 @@ namespace PaymentAPI.Models
         public Order Order { get; private set; } = null!;
         public User User { get; private set; } = null!;
         protected Payment() { }
-        public Payment(OrderId orderId, UserId userId, decimal amount, string currency,
+        public Payment(OrderId orderId, UserId userId, decimal amount, string currency, string idempotencyKey,
             string? description = null, ExternalPaymentId? externalPaymentId = null)
         {
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(amount, nameof(amount));
@@ -30,6 +31,7 @@ namespace PaymentAPI.Models
             ExternalPaymentId = externalPaymentId;
             Amount = amount;
             Currency = currency;
+            IdempotencyKey = idempotencyKey;
             CreatedAt = DateTime.UtcNow;
             Status = PaymentStatus.Pending;
             Description = description;

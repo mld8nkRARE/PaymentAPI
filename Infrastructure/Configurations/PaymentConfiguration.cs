@@ -31,6 +31,8 @@ namespace PaymentAPI.Infrastructure.Configurations
                 .IsUnique()
                 .HasFilter("\"external_payment_id\" IS NOT NULL");
 
+            builder.HasIndex(p => p.IdempotencyKey).IsUnique();
+
             builder.HasOne(p => p.Order)
                  .WithOne(o => o.Payment)
                  .HasForeignKey<Payment>(p => p.OrderId)
