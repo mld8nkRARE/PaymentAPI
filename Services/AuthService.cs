@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using PaymentAPI.DTO;
+using PaymentAPI.DTO.auth;
 using PaymentAPI.Infrastructure;
 using PaymentAPI.Interfaces;
 using PaymentAPI.Models;

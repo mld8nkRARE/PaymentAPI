@@ -1,4 +1,4 @@
-using PaymentAPI.DTO;
+using PaymentAPI.DTO.auth;
 using PaymentAPI.Models;
 namespace PaymentAPI.Interfaces
 {

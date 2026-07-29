@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using PaymentAPI.Infrastructure;
 using PaymentAPI.Models;
-using PaymentAPI.DTO;
 using PaymentAPI.Primitives;
 using Microsoft.EntityFrameworkCore;
+using PaymentAPI.DTO.product;
 
 namespace PaymentAPI.Controllers
 {

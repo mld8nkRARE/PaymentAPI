@@ -1,5 +1,5 @@
 using Microsoft.IdentityModel.Tokens;
-using PaymentAPI.DTO;
+using PaymentAPI.DTO.auth;
 using PaymentAPI.Interfaces;
 using PaymentAPI.Models;
 using System.IdentityModel.Tokens.Jwt;

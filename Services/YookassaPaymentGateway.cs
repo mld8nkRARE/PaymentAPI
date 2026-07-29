@@ -1,19 +1,20 @@
 ﻿using Microsoft.Extensions.Options;
-using PaymentAPI.DTO;
+using PaymentAPI.DTO.payment;
 using PaymentAPI.Interfaces;
 using PaymentAPI.Settings;
 using System.Text.Json;
 using Yandex.Checkout.V3;
+using PaymentAPI.DTO;
 
 namespace PaymentAPI.Services
 {
-    public class YookassaGateway : IPaymentGateway
+    public class YookassaPaymentGateway : IPaymentGateway<PaymentCreateYookassaCommand>
     {
         public string ProviderName => "yookassa";
         private readonly YookassaSettings _yookassaSettings;
         private readonly AsyncClient _client;
 
-        public YookassaGateway(IOptions<YookassaSettings> yookassaSettings, IHttpClientFactory httpClientFactory)
+        public YookassaPaymentGateway(IOptions<YookassaSettings> yookassaSettings, IHttpClientFactory httpClientFactory)
         {
             _yookassaSettings = yookassaSettings.Value;
             var client = new Client(yookassaSettings.Value.ShopId, yookassaSettings.Value.SecretKey);
@@ -21,18 +22,11 @@ namespace PaymentAPI.Services
             _client = new AsyncClient(httpClient, false, client);
         }
 
-        public async Task<PaymentResult> CreatePayment(JsonElement paymentData, string idempotenceKey)
+        public async Task<PaymentResult> CreatePaymentAsync(PaymentCreateYookassaCommand paymentData, string idempotenceKey)
         {
-            if (!paymentData.TryGetProperty("amount", out var amountElement))
-                throw new ArgumentException("Отсутствует поле amount", nameof(paymentData));
-            if (!paymentData.TryGetProperty("currency", out var currencyElement))
-                throw new ArgumentException("Отсутствует поле currency", nameof(paymentData));
-
-            var amount = amountElement.GetDecimal();
-            var currency = currencyElement.GetString()
-                ?? throw new ArgumentException("Поле currency не может быть null", nameof(paymentData));
-            var description = paymentData.TryGetProperty("description", out var d)
-                ? d.GetString() : null;
+            var amount = paymentData.Amount;
+            var currency = paymentData.Currency;
+            var description = paymentData.Description;
 
             NewPayment newPayment = new NewPayment()
             {
@@ -64,14 +58,6 @@ namespace PaymentAPI.Services
             };
         }
 
-        public async Task<PaymentWebhookResult> HandleWebhookAsync(JsonElement webhookBody)
-        {
-            var id = webhookBody.GetProperty("object").GetProperty("id").GetString()
-                ?? throw new ArgumentException("Отсутствует id в webhook");
-
-            var paymentFromApi = await _client.GetPaymentAsync(id);
-            var status = (PaymentAPI.Primitives.PaymentStatus)(int)paymentFromApi.Status;
-            return new PaymentWebhookResult(id, status);
-        }
+       
     }
 }

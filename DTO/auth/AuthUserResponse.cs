@@ -1,4 +1,4 @@
-﻿namespace PaymentAPI.DTO
+﻿namespace PaymentAPI.DTO.auth
 {
     public record AuthUserResponse
     (
