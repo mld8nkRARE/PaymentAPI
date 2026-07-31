@@ -17,7 +17,7 @@ namespace PaymentAPI.Models
 
         public RefreshToken(string token, UserId userId, DateTime expireAt)
         {
-            Id = new RefreshTokenId();
+            Id = RefreshTokenId.New();
             Token = token;
             UserId = userId;
             ExpireAt = expireAt;
