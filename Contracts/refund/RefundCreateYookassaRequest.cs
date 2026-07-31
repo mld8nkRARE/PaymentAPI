@@ -1,4 +1,4 @@
-﻿using PaymentAPI.Domain.Refund;
+﻿using PaymentAPI.Domain.Refunds;
 using PaymentAPI.Primitives;
 
 namespace PaymentAPI.DTO.refund

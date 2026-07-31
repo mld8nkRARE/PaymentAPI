@@ -5,7 +5,7 @@ using PaymentAPI.DTO.order;
 using PaymentAPI.Domain.Primitives;
 using PaymentAPI.Domain;
 
-namespace PaymentAPI.Application.Order
+namespace PaymentAPI.Application.Orders
 {
     public class OrderService
     {

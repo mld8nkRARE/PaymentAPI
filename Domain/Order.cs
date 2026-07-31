@@ -1,4 +1,4 @@
-﻿using PaymentAPI.Domain.Payment;
+﻿using PaymentAPI.Domain.Payments;
 using PaymentAPI.Domain.Primitives;
 using PaymentAPI.Primitives;
 using System.ComponentModel.DataAnnotations;

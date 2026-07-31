@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PaymentAPI.Application.Refund;
+using PaymentAPI.Application.Refunds;
 using PaymentAPI.DTO.refund;
-using PaymentAPI.Models;
 using PaymentAPI.Primitives;
-using System.Security.Claims;
 
 namespace PaymentAPI.Controllers
 {

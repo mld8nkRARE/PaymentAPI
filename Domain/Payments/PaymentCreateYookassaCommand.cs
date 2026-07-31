@@ -1,6 +1,6 @@
 ﻿using PaymentAPI.Primitives;
 
-namespace PaymentAPI.Domain.Payment
+namespace PaymentAPI.Domain.Payments
 {
     public record PaymentCreateYookassaCommand(
         decimal Amount,

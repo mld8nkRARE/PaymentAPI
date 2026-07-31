@@ -1,4 +1,4 @@
-using PaymentAPI.Domain.Refund;
+using PaymentAPI.Domain.Refunds;
 using PaymentAPI.DTO.refund;
 using System.Text.Json;
 

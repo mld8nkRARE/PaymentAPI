@@ -1,6 +1,6 @@
 ﻿using PaymentAPI.Primitives;
 
-namespace PaymentAPI.Domain.Refund
+namespace PaymentAPI.Domain.Refunds
 {
     public record RefundCanceledEvent(
     RefundId RefundId,

@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using PaymentAPI.Domain.Refund;
+using PaymentAPI.Domain.Refunds;
 
 namespace PaymentAPI.Application.EventHandlers
 {

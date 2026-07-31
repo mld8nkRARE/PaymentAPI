@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PaymentAPI.Domain.Refund;
+using PaymentAPI.Domain.Refunds;
 using PaymentAPI.Infrastructure;
 using PaymentAPI.Primitives;
 
-namespace PaymentAPI.Application.Refund
+namespace PaymentAPI.Application.Refunds
 {
     public class RefundRepository
     {

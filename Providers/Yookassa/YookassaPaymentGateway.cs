@@ -4,7 +4,7 @@ using System.Text.Json;
 using Yandex.Checkout.V3;
 using PaymentAPI.DTO;
 using PaymentAPI.Primitives;
-using PaymentAPI.Domain.Payment;
+using PaymentAPI.Domain.Payments;
 using PaymentAPI.Providers.Interfaces;
 
 namespace PaymentAPI.Providers.Yookassa
