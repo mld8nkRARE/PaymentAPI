@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PaymentAPI.Application.Payment;
 using PaymentAPI.DTO.payment;
 using PaymentAPI.Extensions;
-using PaymentAPI.Services;
 
 namespace PaymentAPI.Controllers
 {

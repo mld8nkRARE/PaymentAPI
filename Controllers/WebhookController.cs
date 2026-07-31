@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PaymentAPI.Services;
+using PaymentAPI.Application.Webhook;
 using System.Text.Json;
 
 namespace PaymentAPI.Controllers
