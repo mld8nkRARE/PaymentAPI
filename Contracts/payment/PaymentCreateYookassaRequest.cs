@@ -1,4 +1,4 @@
-﻿using PaymentAPI.Domain.Payment;
+﻿using PaymentAPI.Domain.Payments;
 
 namespace PaymentAPI.DTO.payment
 {

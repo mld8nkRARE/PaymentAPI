@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PaymentAPI.Domain.Refund;
+using PaymentAPI.Domain.Refunds;
 using PaymentAPI.Primitives;
 
 namespace PaymentAPI.Infrastructure.Configurations

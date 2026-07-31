@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
-using PaymentAPI.Application.Payment;
-using PaymentAPI.Domain.Refund;
+using PaymentAPI.Application.Payments;
+using PaymentAPI.Domain.Refunds;
 using PaymentAPI.DTO.refund;
 using PaymentAPI.Infrastructure;
 using PaymentAPI.Primitives;
 using PaymentAPI.Providers.Interfaces;
 
-namespace PaymentAPI.Application.Refund
+namespace PaymentAPI.Application.Refunds
 {
     public class RefundHandler
     {

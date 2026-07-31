@@ -1,10 +1,9 @@
-﻿using PaymentAPI.Domain.Payment;
+﻿using PaymentAPI.Domain.Payments;
 using PaymentAPI.Domain.Primitives;
-using PaymentAPI.Domain.Refund;
+using PaymentAPI.Domain.Refunds;
 using PaymentAPI.DTO.payment;
 using PaymentAPI.DTO.refund;
 using PaymentAPI.Providers.Interfaces;
-using PaymentAPI.Settings;
 using System.Text.Json;
 
 namespace PaymentAPI.Providers.Yookassa

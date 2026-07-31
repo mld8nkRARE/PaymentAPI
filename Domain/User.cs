@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using PaymentAPI.Domain.Payment;
-using PaymentAPI.Interfaces;
+using PaymentAPI.Domain.Payments;
 using PaymentAPI.Primitives;
 
 namespace PaymentAPI.Domain

@@ -1,11 +1,10 @@
-﻿using PaymentAPI.Domain.Payment;
+﻿using PaymentAPI.Domain.Payments;
 using PaymentAPI.DTO.payment;
 using PaymentAPI.Infrastructure;
-using PaymentAPI.Models;
 using PaymentAPI.Primitives;
 using PaymentAPI.Providers.Interfaces;
 
-namespace PaymentAPI.Application.Payment
+namespace PaymentAPI.Application.Payments
 {
     public class PaymentHandler
     {

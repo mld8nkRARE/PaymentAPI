@@ -1,4 +1,4 @@
-﻿using PaymentAPI.Domain.Refund;
+﻿using PaymentAPI.Domain.Refunds;
 using PaymentAPI.Primitives;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;

@@ -1,12 +1,9 @@
-﻿using PaymentAPI.DTO;
-using PaymentAPI.Infrastructure;
-using PaymentAPI.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using PaymentAPI.Infrastructure;
 using System.Text.Json;
 using PaymentAPI.Domain.Primitives;
 using PaymentAPI.Providers.Interfaces;
-using PaymentAPI.Application.Refund;
-using PaymentAPI.Application.Payment;
+using PaymentAPI.Application.Refunds;
+using PaymentAPI.Application.Payments;
 
 namespace PaymentAPI.Application.Webhook
 {

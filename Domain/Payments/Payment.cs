@@ -1,7 +1,8 @@
 using PaymentAPI.Domain.Primitives;
+using PaymentAPI.Domain.Refunds;
 using PaymentAPI.Primitives;
 
-namespace PaymentAPI.Domain.Payment
+namespace PaymentAPI.Domain.Payments
 {
     public class Payment : Entity
     {

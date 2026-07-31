@@ -1,12 +1,13 @@
 ﻿using PaymentAPI.Primitives;
 
-namespace PaymentAPI.Domain.Refund
+namespace PaymentAPI.Domain.Payments
 {
-    public abstract record RefundCreateCommand
+    public abstract record PaymentCreateCommand
     (
-        ExternalPaymentId PaymentId,
         decimal Amount,
         string Currency,
+        OrderId OrderId,
         string? Description
     );
+    
 }

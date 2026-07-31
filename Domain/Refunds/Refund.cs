@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using PaymentAPI.Domain;
-using PaymentAPI.Domain.Payment;
+using PaymentAPI.Domain.Payments;
 using PaymentAPI.Domain.Primitives;
 using PaymentAPI.DTO.refund;
 using PaymentAPI.Primitives;
 using System.Net.NetworkInformation;
 
-namespace PaymentAPI.Domain.Refund
+namespace PaymentAPI.Domain.Refunds
 {
     public class Refund : Entity
     {

@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PaymentAPI.Domain.Payment;
+using PaymentAPI.Domain.Payments;
 using PaymentAPI.Infrastructure;
 using PaymentAPI.Primitives;
 
-namespace PaymentAPI.Application.Payment
+namespace PaymentAPI.Application.Payments
 {
     public class PaymentRepository
     {

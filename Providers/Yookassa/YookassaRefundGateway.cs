@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Options;
-using PaymentAPI.Domain.Refund;
+using PaymentAPI.Domain.Refunds;
 using PaymentAPI.DTO.refund;
 using PaymentAPI.Primitives;
 using PaymentAPI.Providers.Interfaces;
