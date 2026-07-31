@@ -19,20 +19,21 @@ namespace PaymentAPI.Services
 
         public async Task<PaymentResult> CreatePaymentAsync(PaymentCreateRequest request, UserId userId, string idempotenceKey)
         {
-            //if (_db.Payments.FindAsync(p=>p.))
             var command = request.ToCommand();
             var gateway = ResolveGateway(command);
-            var externalResult = await ((dynamic)gateway).CreatePaymentAsync(command, idempotenceKey);
+            var externalResult = await ((dynamic)gateway).CreatePaymentAsync((dynamic)command, idempotenceKey);
 
             var description = request.Description;
             var orderId = request.OrderId;
+
             var payment = new Payment(
                 orderId,
                 userId,
                 externalResult.Amount,
                 externalResult.Currency,
+                idempotenceKey,
                 description,
-                externalResult);
+                externalResult.ExternalPaymentId);
 
             _db.Payments.Add(payment);
             await _db.SaveChangesAsync();

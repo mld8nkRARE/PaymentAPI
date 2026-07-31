@@ -38,7 +38,7 @@ namespace PaymentAPI.Controllers
             try
             {
                 var userId = GetUserId();
-                var refund = await _refundHandler.CreateRefundAsync(request, userId, provider, idempotenceKey);
+                var refund = await _refundHandler.CreateRefundAsync(request, userId, idempotenceKey);
                 return Ok(refund);
             }
             catch (NotSupportedException ex)

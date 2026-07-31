@@ -45,6 +45,7 @@ namespace PaymentAPI.Infrastructure.Configurations
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Navigation(p => p.Refunds).UsePropertyAccessMode(PropertyAccessMode.Field);
         }   
     }
 }

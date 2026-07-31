@@ -1,10 +1,13 @@
+using PaymentAPI.Primitives;
+
 namespace PaymentAPI.DTO.refund
 {
     public record RefundResult(
-        string ExternalRefundId,
+        ExternalRefundId ExternalRefundId,
+        ExternalPaymentId ExternalPaymentId,
         decimal Amount,
         string Currency,
-        string Status,
+        RefundStatus Status,
         string? CancellationParty = null,
         string? CancellationReason = null);
 

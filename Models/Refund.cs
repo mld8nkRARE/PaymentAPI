@@ -1,12 +1,16 @@
+using Microsoft.EntityFrameworkCore.Query.Internal;
+using PaymentAPI.DTO.refund;
 using PaymentAPI.Primitives;
+using System.Net.NetworkInformation;
 
 namespace PaymentAPI.Models
 {
-    public class Refund
+    public class Refund : Entity
     {
         public RefundId Id { get; private init; }
         public PaymentId PaymentId { get; private init; }
-        public string? ExternalRefundId { get; private set; }
+        public OrderId OrderId { get; private init; }
+        public ExternalRefundId? ExternalRefundId { get; private set; }
         public decimal Amount { get; private init; }
         public string Currency { get; private init; } = null!;
         public RefundStatus Status { get; private set; }
@@ -19,13 +23,14 @@ namespace PaymentAPI.Models
 
         protected Refund() { }
 
-        public Refund(PaymentId paymentId, decimal amount, string currency, string? description = null)
+        public Refund(PaymentId paymentId, OrderId orderId, decimal amount, string currency, string? description = null)
         {
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(amount);
             ArgumentNullException.ThrowIfNullOrEmpty(currency);
 
             Id = RefundId.New();
             PaymentId = paymentId;
+            OrderId = orderId;
             Amount = amount;
             Currency = currency;
             Description = description;
@@ -33,31 +38,37 @@ namespace PaymentAPI.Models
             CreatedAt = DateTime.UtcNow;
         }
 
-        public void ApplyGatewayResult(string externalRefundId, string status,
+        public void ApplyGatewayResult(ExternalRefundId externalRefundId, RefundStatus status,
             string? cancellationParty = null, string? cancellationReason = null)
         {
+            if (Status != RefundStatus.Pending)
+                return;
             ExternalRefundId = externalRefundId;
-
-            if (status == "succeeded")
-                Status = RefundStatus.Succeeded;
-            else if (status == "canceled")
+            switch (status)
             {
-                Status = RefundStatus.Canceled;
-                CancellationParty = cancellationParty;
-                CancellationReason = cancellationReason;
+                case RefundStatus.Pending:
+                    Status = RefundStatus.Pending;
+                    break;
+
+                case RefundStatus.Succeeded:
+                    Status = RefundStatus.Succeeded;
+                    bool isFullRefund = Payment.RefundedAmount == Amount;
+                    Payment.Order.ChangeStatus(isFullRefund ? OrderStatus.Refunded : OrderStatus.PartiallyRefunded);
+                    //Возможно не стоит передавать isFullRefund, а сделать развилку на 2 события
+                    //Потому что потом будет либо плодиться if/else в обработчике события если нам важен статус в выборе
+                    //Не факт, что вообще для дальнейшей обработки нам важно полный возврат или нет
+                    AddDomainEvent(new RefundSucceededEvent(Id,PaymentId,OrderId,Amount, isFullRefund));
+                    // product.AddToStock
+                    break;
+
+                case RefundStatus.Canceled:
+                    Status = RefundStatus.Canceled;
+                    CancellationParty = cancellationParty;
+                    CancellationReason = cancellationReason;
+                    break;
             }
+            
         }
-
-        public void SetSucceeded()
-        {
-            Status = RefundStatus.Succeeded;
-        }
-
-        public void SetCanceled(string party, string reason)
-        {
-            Status = RefundStatus.Canceled;
-            CancellationParty = party;
-            CancellationReason = reason;
-        }
+       
     }
 }

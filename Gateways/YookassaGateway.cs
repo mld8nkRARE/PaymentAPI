@@ -1,26 +1,31 @@
 ﻿using PaymentAPI.DTO.payment;
 using PaymentAPI.DTO.refund;
 using PaymentAPI.Interfaces;
+using PaymentAPI.Primitives;
 using PaymentAPI.Services;
 using PaymentAPI.Settings;
 using System.Text.Json;
 
 namespace PaymentAPI.Gateways
 {
-    public class YookassaGateway : IPaymentGateway<PaymentCreateYookassaCommand>, IPaymentWebhookHandler, IRefundGateway,IRefundWebhookHandler
+    public class YookassaGateway : IPaymentGateway<PaymentCreateYookassaCommand>, IPaymentWebhookHandler,
+        IRefundGateway<RefundCreateYookassaCommand>, IRefundWebhookHandler, IWebhookClassifier
     {
         public string ProviderName => "yookassa"; 
         private readonly YookassaPaymentGateway _yookassaPaymentGateway;
         private readonly YookassaPaymentWebhookHandler _yookassaPaymentWebhookHandler;
         private readonly YookassaRefundGateway _yookassaRefundGateway;
         private readonly YookassaRefundWebhookHandler _yookassaRefundWebhookHandler;
-        public YookassaGateway(YookassaPaymentGateway yookassaPaymentGateway, YookassaPaymentWebhookHandler yookassaPaymentWebhookHandler,
-            YookassaRefundGateway yookassaRefundGateway, YookassaRefundWebhookHandler yookassaRefundWebhookHandler)
+        private readonly YookassaWebhookClassifier _yookassaWebhookClassifier;
+        public YookassaGateway(YookassaPaymentGateway yookassaPaymentGateway,
+            YookassaPaymentWebhookHandler yookassaPaymentWebhookHandler,YookassaRefundGateway yookassaRefundGateway,
+            YookassaRefundWebhookHandler yookassaRefundWebhookHandler, YookassaWebhookClassifier yookassaWebhookClassifier)
         {
             _yookassaPaymentGateway = yookassaPaymentGateway;
             _yookassaPaymentWebhookHandler = yookassaPaymentWebhookHandler;
             _yookassaRefundGateway = yookassaRefundGateway;
             _yookassaRefundWebhookHandler = yookassaRefundWebhookHandler;
+            _yookassaWebhookClassifier = yookassaWebhookClassifier;
         }
         public Task<PaymentResult> CreatePaymentAsync(PaymentCreateYookassaCommand cmd, string idempotenceKey)
             => _yookassaPaymentGateway.CreatePaymentAsync(cmd, idempotenceKey);
@@ -32,5 +37,7 @@ namespace PaymentAPI.Gateways
             => _yookassaRefundWebhookHandler.HandleRefundWebhookAsync(webhookBody);
         public Task<RefundResult> GetRefundAsync(string refundId)
             => _yookassaRefundGateway.GetRefundAsync(refundId);
+        public WebhookType GetWebhookType(JsonElement webhookBody)
+            => _yookassaWebhookClassifier.GetWebhookType(webhookBody);
     }
 }

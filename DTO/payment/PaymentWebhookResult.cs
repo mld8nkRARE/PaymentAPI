@@ -2,5 +2,5 @@
 
 namespace PaymentAPI.DTO.payment
 {
-    public record PaymentWebhookResult(string ExternalPaymentId, PaymentStatus Status);
+    public record PaymentWebhookResult(ExternalPaymentId ExternalPaymentId, PaymentStatus Status);
 }

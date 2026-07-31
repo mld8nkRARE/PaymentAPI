@@ -5,6 +5,8 @@ namespace PaymentAPI.Primitives
         Pending = 0,
         WaitingForCapture = 1,
         Succeeded = 2,
-        Canceled = 3
+        Canceled = 3,
+        PartiallyRefunded = 4,
+        Refunded = 5
     }
 }

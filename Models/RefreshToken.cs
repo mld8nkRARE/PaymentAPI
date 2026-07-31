@@ -2,7 +2,7 @@ using PaymentAPI.Primitives;
 
 namespace PaymentAPI.Models
 {
-    public class RefreshToken
+    public class RefreshToken : Entity
     {
         public RefreshTokenId Id { get; private init; }
         public string Token { get; private init; } = null!;
@@ -17,7 +17,7 @@ namespace PaymentAPI.Models
 
         public RefreshToken(string token, UserId userId, DateTime expireAt)
         {
-            Id = new RefreshTokenId();
+            Id = RefreshTokenId.New();
             Token = token;
             UserId = userId;
             ExpireAt = expireAt;

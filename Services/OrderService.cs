@@ -45,7 +45,7 @@ namespace PaymentAPI.Services
             if (order.Status != OrderStatus.Pending)
                 throw new InvalidOperationException($"Невозможно отменить заказ в статусе {order.Status}");
 
-            order.ChangeOrderStatus(OrderStatus.Cancelled);
+            order.ChangeStatus(OrderStatus.Cancelled);
             await _db.SaveChangesAsync();
         }
 

@@ -5,6 +5,7 @@ using PaymentAPI.Settings;
 using System.Text.Json;
 using Yandex.Checkout.V3;
 using PaymentAPI.DTO;
+using PaymentAPI.Primitives;
 
 namespace PaymentAPI.Services
 {
@@ -48,9 +49,8 @@ namespace PaymentAPI.Services
             
             return new PaymentResult
             {
-                PaymentId = string.Empty,
                 Status = payment.Status.ToString(),
-                ExternalPaymentId = payment.Id,
+                ExternalPaymentId = new ExternalPaymentId(payment.Id),
                 Amount = payment.Amount.Value,
                 Currency = payment.Amount.Currency,
                 ConfirmationUrl = payment.Confirmation.ConfirmationUrl,

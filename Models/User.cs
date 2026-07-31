@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using PaymentAPI.Interfaces;
 using PaymentAPI.Primitives;
 
 namespace PaymentAPI.Models

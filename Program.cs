@@ -6,6 +6,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using PaymentAPI.DTO.payment;
+using PaymentAPI.DTO.refund;
+using PaymentAPI.Gateways;
 using PaymentAPI.Infrastructure;
 using PaymentAPI.Interfaces;
 using PaymentAPI.Models;
@@ -18,10 +21,12 @@ using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddScoped<DomainEventPublishingInterceptor>();
+builder.Services.AddDbContext<ApplicationDbContext>((sp,options) =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
-    .UseSnakeCaseNamingConvention();
+    .UseSnakeCaseNamingConvention()
+    .AddInterceptors(sp.GetRequiredService<DomainEventPublishingInterceptor>());
 });
 
 builder.Services.AddIdentity<User, IdentityRole<UserId>>(options => 
@@ -66,15 +71,18 @@ builder.Services.AddControllers();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<IPaymentGateway, YookassaGateway>();
-builder.Services.AddScoped<CreatePaymentHandler>();
+builder.Services.AddScoped<IPaymentGateway<PaymentCreateYookassaCommand>, YookassaPaymentGateway>();
+builder.Services.AddScoped<IRefundGateway<RefundCreateYookassaCommand>, YookassaRefundGateway>();
+builder.Services.AddScoped<PaymentHandler>();
 builder.Services.AddScoped<WebhookHandler>();
 builder.Services.AddScoped<WebhookVerifierContext>();
 builder.Services.AddScoped<ISourceIpVerifier, YookassaIpVerifier>();
-builder.Services.AddScoped<IRefundGateway, YookassaRefundGateway>();
 builder.Services.AddScoped<RefundHandler>();
-builder.Services.AddScoped<RefundValidator>();
 builder.Services.AddHostedService<RefundPollingService>();
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+builder.Services.AddScoped<IWebhookClassifier,YookassaWebhookClassifier>();
+builder.Services.AddScoped<IPaymentWebhookHandler, YookassaPaymentWebhookHandler>();
+builder.Services.AddScoped<OrderService>();
 
 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);

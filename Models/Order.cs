@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 namespace PaymentAPI.Models
 {
-    public class Order
+    public class Order : Entity
     {
         public OrderId Id { get; private init; }
         public DateTime CreatedAt { get; private init; }
@@ -68,7 +68,7 @@ namespace PaymentAPI.Models
         {
             TotalPrice = _orderItems.Sum(i => i.TotalPrice);
         }
-        public void ChangeOrderStatus(OrderStatus status)
+        public void ChangeStatus(OrderStatus status)
         {
             if (Status == status) return;
             Status = status;

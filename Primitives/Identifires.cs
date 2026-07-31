@@ -15,6 +15,8 @@ namespace PaymentAPI.Primitives
     public readonly partial struct OrderItemId;
     [StronglyTypedId(Template.Guid, "guid-efcore")]
     public readonly partial struct RefundId;
+    [StronglyTypedId(Template.String, "string-efcore")]
+    public readonly partial struct ExternalRefundId;
     [StronglyTypedId(Template.Guid, "guid-efcore")]
     public readonly partial struct RefreshTokenId;
 }

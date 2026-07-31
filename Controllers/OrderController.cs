@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PaymentAPI.DTO.order;
+using PaymentAPI.Extensions;
 using PaymentAPI.Models;
 using PaymentAPI.Primitives;
 using PaymentAPI.Services;
-using System.Security.Claims;
+
 
 namespace PaymentAPI.Controllers
 {
@@ -31,6 +32,8 @@ namespace PaymentAPI.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> CreateOrder([FromBody] OrderCreateRequest request)
         {
+            //TO DO
+            //идемпотентность
             var userId = GetUserId();
             var order = await _orderService.CreateOrderAsync(request, userId);
             return Ok(order);
@@ -55,9 +58,10 @@ namespace PaymentAPI.Controllers
 
         private UserId GetUserId()
         {
-            var claim = User.FindFirst(ClaimTypes.NameIdentifier)
-                ?? throw new UnauthorizedAccessException();
-            return new UserId(Guid.Parse(claim.Value));
+            if(!User.TryGetUserId(out var userId))
+                throw new UnauthorizedAccessException();
+
+            return userId;
         }
     }
 }
