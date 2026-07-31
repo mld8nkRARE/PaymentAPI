@@ -3,11 +3,10 @@ using System.Text.Json;
 
 namespace PaymentAPI.Interfaces
 {
-    public interface IRefundGateway
+    public interface IRefundGateway { }
+    public interface IRefundGateway<in TCommand> where TCommand:RefundCreateCommand
     {
-        string ProviderName { get; }
-        Task<RefundResult> CreateRefundAsync(string paymentId, decimal amount, string currency, string idempotenceKey);
-        Task<RefundWebhookResult> HandleRefundWebhookAsync(JsonElement webhookBody);
+        Task<RefundResult> CreateRefundAsync(TCommand cmd, string idempotenceKey);
         Task<RefundResult> GetRefundAsync(string refundId);
     }
 }

@@ -1,52 +1,40 @@
-using PaymentAPI.DTO;
+using Microsoft.EntityFrameworkCore;
+using PaymentAPI.DTO.refund;
 using PaymentAPI.Infrastructure;
 using PaymentAPI.Interfaces;
-using PaymentAPI.Models;
 using PaymentAPI.Primitives;
-using Microsoft.EntityFrameworkCore;
 
 namespace PaymentAPI.Services
 {
     public class RefundHandler
     {
         private readonly ApplicationDbContext _db;
-        private readonly Dictionary<string, IRefundGateway> _refundGateways;
-        private readonly RefundValidator _refundValidator;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly PaymentRepository _paymentRepository;
 
-        public RefundHandler(ApplicationDbContext db, IEnumerable<IRefundGateway> refundGateways, RefundValidator refundValidator)
+
+        public RefundHandler(ApplicationDbContext db)
         {
             _db = db;
-            _refundGateways = refundGateways.ToDictionary(g => g.ProviderName, StringComparer.OrdinalIgnoreCase);
-            _refundValidator = refundValidator;
+            _paymentRepository = new PaymentRepository(_db);
         }
 
-        public async Task<RefundResponse> CreateRefundAsync(RefundCreateRequest request, UserId userId, string provider, string idempotenceKey)
+        public async Task<RefundResponse> CreateRefundAsync(RefundCreateRequest request,
+            UserId userId, string idempotenceKey)
         {
-            if (!_refundGateways.TryGetValue(provider, out var refundGateway))
-                throw new NotSupportedException($"Провайдер {provider} не поддерживается");
+            var payment = await _paymentRepository.GetPaymentByExternalIdAsync(request.ExternalPaymentId);
+            var refund = payment.RequestRefund(request.Amount, request.Currency, request.Description, userId);
 
-            var payment = await _db.Payments
-                .Include(p => p.Order)
-                .FirstOrDefaultAsync(p => p.Id == request.PaymentId && p.UserId == userId)
-                ?? throw new InvalidOperationException($"Платёж {request.PaymentId} не найден");
-
-            await _refundValidator.ValidateAsync(payment, request.Amount, userId);
-
-            var gatewayResult = await refundGateway.CreateRefundAsync(
-                payment.ExternalPaymentId!.ToString(), request.Amount, request.Currency, idempotenceKey);
-
-            var refund = new Refund(request.PaymentId, request.Amount, request.Currency, request.Description);
+            var cmd = request.ToCommand();
+            var refundGateway = ResolveGateway(cmd);
+            
+            RefundResult gatewayResult = await ((dynamic)refundGateway).CreateRefundAsync(cmd, idempotenceKey);
 
             refund.ApplyGatewayResult(
                 gatewayResult.ExternalRefundId,
                 gatewayResult.Status,
                 gatewayResult.CancellationParty,
                 gatewayResult.CancellationReason);
-
-            _db.Refunds.Add(refund);
-
-            if (refund.Status == RefundStatus.Succeeded)
-                await OnRefundSucceeded(refund);
 
             await _db.SaveChangesAsync();
 
@@ -58,23 +46,13 @@ namespace PaymentAPI.Services
                 refund.Status.ToString(),
                 refund.CreatedAt);
         }
-
-        public async Task HandleRefundWebhookAsync(string externalRefundId, string status)
+        private object ResolveGateway(RefundCreateCommand cmd)
         {
-            var refund = await _db.Refunds
-                .FirstOrDefaultAsync(r => r.ExternalRefundId == externalRefundId)
-                ?? throw new InvalidOperationException($"Возврат {externalRefundId} не найден");
-
-            if (refund.Status == RefundStatus.Succeeded || refund.Status == RefundStatus.Canceled)
-                return;
-
-            if (status == "succeeded")
-            {
-                refund.SetSucceeded();
-                await OnRefundSucceeded(refund);
-            }
-
-            await _db.SaveChangesAsync();
+            var RefundProviderName = typeof(IRefundGateway<>).MakeGenericType(cmd.GetType());
+            var gateway = _serviceProvider.GetService(RefundProviderName);
+            if (gateway is null)
+                throw new NotSupportedException($"Провайдер для {cmd.GetType().Name} не поддерживается");
+            return gateway;
         }
 
         public async Task<RefundResponse?> GetRefundAsync(RefundId refundId, UserId userId)
@@ -116,33 +94,6 @@ namespace PaymentAPI.Services
             )).ToList();
         }
 
-        public async Task OnRefundSucceeded(Refund refund)
-        {
-            var payment = await _db.Payments
-                .Include(p => p.Order)
-                    .ThenInclude(o => o.OrderItems)
-                .FirstAsync(p => p.Id == refund.PaymentId);
-
-            var order = payment.Order;
-
-            var totalRefunded = await _db.Refunds
-                .Where(r => r.PaymentId == refund.PaymentId && r.Status == RefundStatus.Succeeded)
-                .SumAsync(r => r.Amount);
-
-            if (totalRefunded >= payment.Amount)
-            {
-                order.ChangeOrderStatus(OrderStatus.Refunded);
-                foreach (var orderItem in order.OrderItems)
-                {
-                    var product = await _db.Products.FindAsync(orderItem.ProductId);
-                    if (product is not null)
-                        product.AddToStock(orderItem.Quantity);
-                }
-            }
-            else
-            {
-                order.ChangeOrderStatus(OrderStatus.PartiallyRefunded);
-            }
-        }
+       
     }
 }

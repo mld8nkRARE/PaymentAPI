@@ -1,4 +1,6 @@
-﻿namespace PaymentAPI.DTO.refund
+﻿using PaymentAPI.Primitives;
+
+namespace PaymentAPI.DTO.refund
 {
-    public record RefundWebhookResult(string ExternalRefundId, string Status);
+    public record RefundWebhookResult(ExternalRefundId ExternalRefundId, RefundStatus Status);
 }

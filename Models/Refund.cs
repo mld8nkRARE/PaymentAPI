@@ -1,3 +1,4 @@
+using PaymentAPI.DTO.refund;
 using PaymentAPI.Primitives;
 
 namespace PaymentAPI.Models
@@ -35,19 +36,29 @@ namespace PaymentAPI.Models
             CreatedAt = DateTime.UtcNow;
         }
 
-        public void ApplyGatewayResult(string externalRefundId, string status,
+        public void ApplyGatewayResult(ExternalRefundId externalRefundId, RefundStatus status,
             string? cancellationParty = null, string? cancellationReason = null)
         {
+            if (Status != RefundStatus.Pending)
+                return;
             ExternalRefundId = externalRefundId;
-
-            if (status == "succeeded")
-                Status = RefundStatus.Succeeded;
-            else if (status == "canceled")
+            switch (status)
             {
+                case RefundStatus.Pending:
+                    Status = RefundStatus.Pending;
+                    break;
+
+                case RefundStatus.Succeeded:
+                Status = RefundStatus.Succeeded;
+                    bool isFullRefund = Payment.RefundedAmount == Amount;
+                    Payment.Order.ChangeStatus(isFullRefund ? OrderStatus.Refunded : OrderStatus.PartiallyRefunded);
+                    break;
+
+                case RefundStatus.Canceled:
                 Status = RefundStatus.Canceled;
                 CancellationParty = cancellationParty;
                 CancellationReason = cancellationReason;
-            }
+                    break;
         }
 
         }

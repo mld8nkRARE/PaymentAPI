@@ -36,10 +36,61 @@ namespace PaymentAPI.Models
             Status = PaymentStatus.Pending;
             Description = description;
         }
-        public void ChangeStatus(PaymentStatus status)
+
+        public Refund RequestRefund(decimal amount, string currency, string? description, UserId userId)
         {
-            if (Status == status) return;
-            Status = status;
+            if (UserId != userId)
+                throw new InvalidOperationException($"Платёж {Id} не принадлежит пользователю");
+
+            if (Status != PaymentStatus.Succeeded)
+                throw new InvalidOperationException($"Платёж {Id} не в статусе Succeeded (текущий: {Status})");
+
+            if (ExternalPaymentId is null)
+                throw new InvalidOperationException($"Платёж {Id} не имеет ExternalPaymentId");
+
+            var available = Amount - RefundedAmount;
+
+
+            if (amount <= 0 || amount > available)
+                throw new InvalidOperationException($"Недопустимая сумма возврата {amount}. Доступно: {available}");
+
+            //TO DO
+            //if (amount < 1 && payment.Currency == "RUB")
+            //    throw new InvalidOperationException("Минимальная сумма возврата — 1 рубль");
+
+
+            if (Order is null)
+                throw new InvalidOperationException($"Заказ для платежа {Id} не найден");
+
+            if (Order.Status != OrderStatus.Paid && Order.Status != OrderStatus.PartiallyRefunded)
+                throw new InvalidOperationException($"Возврат невозможен: статус заказа {Order.Status}");
+
+            //TO DO
+            var remaining = available - amount;
+            if (remaining > 0 && remaining < 1)
+                throw new InvalidOperationException(
+                    $"Остаток после возврата {remaining} должен быть >= 1 или 0");
+            //
+            var refund = new Refund(Id,OrderId, amount, currency, description);
+            _refunds.Add(refund);
+            return refund;
+        }
+        public void ApplyGatewayResult(PaymentStatus paymentStatus)
+        {
+            if (Status == paymentStatus || Status == PaymentStatus.Canceled
+                || Status == PaymentStatus.Succeeded)
+                return;
+
+            Status = paymentStatus;
+
+            if (Status == PaymentStatus.Succeeded)
+                Order.ChangeStatus(OrderStatus.Paid);
+
+            else if(Status == PaymentStatus.WaitingForCapture)
+                Order.ChangeStatus(OrderStatus.WaitingForCapture);
+
+            else if(Status == PaymentStatus.Canceled)
+                Order.ChangeStatus(OrderStatus.Cancelled);
         }
     }
 }
