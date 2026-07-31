@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PaymentAPI.Models;
+using PaymentAPI.Domain.Payments;
 using PaymentAPI.Primitives;
 namespace PaymentAPI.Infrastructure.Configurations
 {

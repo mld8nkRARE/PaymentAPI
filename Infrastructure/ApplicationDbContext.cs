@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using PaymentAPI.Models;
 using PaymentAPI.Primitives;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using PaymentAPI.Domain.Payments;
+using PaymentAPI.Domain;
+using PaymentAPI.Domain.Refunds;
 
 namespace PaymentAPI.Infrastructure
 {

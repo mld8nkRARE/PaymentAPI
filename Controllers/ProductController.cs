@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PaymentAPI.Infrastructure;
-using PaymentAPI.Models;
 using PaymentAPI.Primitives;
 using Microsoft.EntityFrameworkCore;
 using PaymentAPI.DTO.product;
+using PaymentAPI.Domain;
 
 namespace PaymentAPI.Controllers
 {
