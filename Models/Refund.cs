@@ -6,7 +6,8 @@ namespace PaymentAPI.Models
     {
         public RefundId Id { get; private init; }
         public PaymentId PaymentId { get; private init; }
-        public string? ExternalRefundId { get; private set; }
+        public OrderId OrderId { get; private init; }
+        public ExternalRefundId? ExternalRefundId { get; private set; }
         public decimal Amount { get; private init; }
         public string Currency { get; private init; } = null!;
         public RefundStatus Status { get; private set; }
@@ -19,13 +20,14 @@ namespace PaymentAPI.Models
 
         protected Refund() { }
 
-        public Refund(PaymentId paymentId, decimal amount, string currency, string? description = null)
+        public Refund(PaymentId paymentId, OrderId orderId, decimal amount, string currency, string? description = null)
         {
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(amount);
             ArgumentNullException.ThrowIfNullOrEmpty(currency);
 
             Id = RefundId.New();
             PaymentId = paymentId;
+            OrderId = orderId;
             Amount = amount;
             Currency = currency;
             Description = description;
@@ -48,16 +50,7 @@ namespace PaymentAPI.Models
             }
         }
 
-        public void SetSucceeded()
-        {
-            Status = RefundStatus.Succeeded;
         }
 
-        public void SetCanceled(string party, string reason)
-        {
-            Status = RefundStatus.Canceled;
-            CancellationParty = party;
-            CancellationReason = reason;
-        }
     }
 }

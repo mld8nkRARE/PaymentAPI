@@ -3,9 +3,10 @@
     public enum OrderStatus
     {
         Pending = 0,
-        Paid = 1,
-        Cancelled = 2,
-        PartiallyRefunded = 3,
-        Refunded = 4
+        WaitingForCapture = 1,
+        Paid = 2,
+        Cancelled = 3,
+        PartiallyRefunded = 4,
+        Refunded = 5
     }
 }

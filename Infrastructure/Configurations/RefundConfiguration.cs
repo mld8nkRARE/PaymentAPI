@@ -14,8 +14,11 @@ namespace PaymentAPI.Infrastructure.Configurations
                 .ValueGeneratedNever();
             builder.Property(r => r.PaymentId).HasConversion<PaymentId.EfCoreValueConverter>()
                 .ValueGeneratedNever();
-
-            builder.Property(r => r.ExternalRefundId).HasMaxLength(100);
+            builder.Property(r => r.OrderId).HasConversion<OrderId.EfCoreValueConverter>()
+                .ValueGeneratedNever();
+            builder.Property(r => r.ExternalRefundId).HasConversion<ExternalRefundId.EfCoreValueConverter>()
+                .ValueGeneratedNever()
+                .HasMaxLength(100);
 
             builder.HasIndex(r => r.ExternalRefundId)
                 .IsUnique()
@@ -29,7 +32,7 @@ namespace PaymentAPI.Infrastructure.Configurations
             builder.Property(r => r.CreatedAt).HasDefaultValueSql("NOW()");
 
             builder.HasOne(r => r.Payment)
-                .WithMany()
+                .WithMany(p => p.Refunds)
                 .HasForeignKey(r => r.PaymentId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
