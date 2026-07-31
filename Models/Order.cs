@@ -68,7 +68,7 @@ namespace PaymentAPI.Models
         {
             TotalPrice = _orderItems.Sum(i => i.TotalPrice);
         }
-        public void ChangeOrderStatus(OrderStatus status)
+        public void ChangeStatus(OrderStatus status)
         {
             if (Status == status) return;
             Status = status;
