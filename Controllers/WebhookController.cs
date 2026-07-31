@@ -8,12 +8,12 @@ namespace PaymentAPI.Controllers
     [AllowAnonymous]
     [Route("api/payment_webhook")]
     [ApiController]
-    public class PaymentWebhookController : ControllerBase
+    public class WebhookController : ControllerBase
     {
         private readonly WebhookVerifierContext _webhookVerifierContext;
         private readonly WebhookHandler _webhookHandler;
 
-        public PaymentWebhookController(
+        public WebhookController(
             WebhookVerifierContext webhookVerifierContext,
             WebhookHandler webhookHandler)
         {
@@ -32,10 +32,11 @@ namespace PaymentAPI.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> HandleWebhook(string provider, [FromBody] JsonElement body)
         {
+            //Если я могу повторно отправить запрос от ngrok, то почему не могут подменить
             if (!await _webhookVerifierContext.VerifyAsync(provider, HttpContext))
                 return Unauthorized();
 
-            await _webhookHandler.HandleAsync(provider, body);
+            await _webhookHandler.HandleWebhokAsync(provider, body);
             return Ok();
         }
     }

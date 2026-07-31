@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 namespace PaymentAPI.Models
 {
-    public class Order
+    public class Order : Entity
     {
         public OrderId Id { get; private init; }
         public DateTime CreatedAt { get; private init; }

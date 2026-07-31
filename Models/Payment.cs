@@ -2,7 +2,7 @@ using PaymentAPI.Primitives;
 
 namespace PaymentAPI.Models
 {
-    public class Payment
+    public class Payment : Entity
     {
         public PaymentId Id { get; private init; }
         public PaymentStatus Status { get; private set; }
@@ -12,6 +12,12 @@ namespace PaymentAPI.Models
         public string IdempotencyKey { get; private init; }
         public DateTime CreatedAt { get; private init; }
         public string? Description { get; private set; }
+        public decimal RefundedAmount => Refunds
+        .Where(r => r.Status == RefundStatus.Succeeded)
+        .Sum(r => r.Amount);
+
+        private List<Refund> _refunds = new();
+        public IReadOnlyCollection<Refund> Refunds => _refunds.AsReadOnly();
 
         public OrderId OrderId { get; private init; }
         public UserId UserId { get; private init; }
@@ -91,6 +97,6 @@ namespace PaymentAPI.Models
 
             else if(Status == PaymentStatus.Canceled)
                 Order.ChangeStatus(OrderStatus.Cancelled);
-        }
+        } 
     }
 }

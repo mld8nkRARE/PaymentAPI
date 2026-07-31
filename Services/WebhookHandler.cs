@@ -11,68 +11,79 @@ namespace PaymentAPI.Services
     public class WebhookHandler
     {
         private readonly ApplicationDbContext _db;
-        private readonly Dictionary<string, IPaymentGateway> _gateways;
-        private readonly Dictionary<string, IRefundGateway> _refundGateways;
-        private readonly RefundHandler _refundHandler;
+        private readonly PaymentRepository _paymentRepository;
+        private readonly RefundRepository _refundRepository;
 
-        public WebhookHandler(
-            ApplicationDbContext db,
-            IEnumerable<IPaymentGateway> gateways,
-            IEnumerable<IRefundGateway> refundGateways,
-            RefundHandler refundHandler)
+        private readonly Dictionary<string, IPaymentWebhookHandler> _paymentWebhookHandlers;
+        private readonly Dictionary<string, IRefundWebhookHandler> _refundWebhookHandlers;
+        private readonly Dictionary<string, IWebhookClassifier> _webhookClassifier;
+
+        public WebhookHandler (ApplicationDbContext db, IEnumerable<IPaymentWebhookHandler> paymentGateways,
+            IEnumerable<IRefundWebhookHandler> refundGateways, IEnumerable<IWebhookClassifier> classifiers
+            )
         {
             _db = db;
-            _gateways = gateways.ToDictionary(g => g.ProviderName, StringComparer.OrdinalIgnoreCase);
-            _refundGateways = refundGateways.ToDictionary(g => g.ProviderName, StringComparer.OrdinalIgnoreCase);
-            _refundHandler = refundHandler;
+            _paymentWebhookHandlers = paymentGateways.ToDictionary(g => g.ProviderName, StringComparer.OrdinalIgnoreCase);
+            _refundWebhookHandlers = refundGateways.ToDictionary(g => g.ProviderName, StringComparer.OrdinalIgnoreCase);
+            _webhookClassifier = classifiers.ToDictionary(c => c.ProviderName, StringComparer.OrdinalIgnoreCase);
+            _paymentRepository = new PaymentRepository(db);
+            _refundRepository = new RefundRepository(db);
         }
 
-        public async Task HandleAsync(string provider, JsonElement webhookBody)
+        public async Task HandleWebhokAsync(string provider, JsonElement webhookBody)
         {
-            if (webhookBody.TryGetProperty("event", out var eventElement))
-            {
-                var eventType = eventElement.GetString();
-                if (eventType?.StartsWith("refund.") == true)
-                {
-                    await HandleRefundAsync(provider, webhookBody);
-                    return;
-                }
-            }
+            if(!_webhookClassifier.TryGetValue(provider, out var webhookClassifier))
+                throw new NotSupportedException($"Провайдер {provider} не поддерживается");
 
-            await HandlePaymentAsync(provider, webhookBody);
+            var  webhookType = webhookClassifier.GetWebhookType(webhookBody);
+
+            switch(webhookType)
+            {
+                case WebhookType.Payment:
+                    await HandlePaymentAsync(provider, webhookBody);
+                    break;
+                case WebhookType.Refund:
+                    await HandleRefundAsync(provider, webhookBody);
+                    break;
+                default:
+                    throw new NotSupportedException($"Тип уведомления {webhookType} не поддерживается");
+            };
+            
         }
 
         private async Task HandlePaymentAsync(string provider, JsonElement webhookBody)
         {
-            if (!_gateways.TryGetValue(provider, out var gateway))
-                throw new NotSupportedException($"Провайдер {provider} не поддерживается");
+            if (!_paymentWebhookHandlers.TryGetValue(provider, out var paymentWebhookHanlder))
+                throw new NotSupportedException($"Обработка уведомлений об оплате для провайдера {provider} не поддерживается");
 
-            var result = await gateway.HandleWebhookAsync(webhookBody);
+            var gatewayResponse = await paymentWebhookHanlder.HandlePaymentWebhookAsync(webhookBody);
 
-            var payment = await _db.Payments
-                .Include(p => p.Order)
-                .FirstOrDefaultAsync(p => p.ExternalPaymentId != null
-                    && p.ExternalPaymentId == new ExternalPaymentId(result.ExternalPaymentId))
-                ?? throw new InvalidOperationException($"Платёж {result.ExternalPaymentId} не найден в БД");
 
-            if (payment.Status == result.Status)
-                return;
+            var payment = await _paymentRepository.GetPaymentByExternalIdAsync(gatewayResponse.ExternalPaymentId)
+                ?? throw new InvalidOperationException($"Платёж {gatewayResponse.ExternalPaymentId} не найден в БД");
 
-            payment.ChangeStatus(result.Status);
-
-            if (result.Status == PaymentStatus.Succeeded)
-                payment.Order.ChangeOrderStatus(OrderStatus.Paid);
+            payment.ApplyGatewayResult(gatewayResponse.Status);
+            
 
             await _db.SaveChangesAsync();
         }
 
         private async Task HandleRefundAsync(string provider, JsonElement webhookBody)
         {
-            if (!_refundGateways.TryGetValue(provider, out var refundGateway))
-                throw new NotSupportedException($"Провайдер {provider} не поддерживает возвраты");
+            if (!_refundWebhookHandlers.TryGetValue(provider, out var refundWebhookHandler))
+                throw new NotSupportedException($"Обработка уведомлений о возврате для провайдера {provider} не поддерживается");
 
-            var result = await refundGateway.HandleRefundWebhookAsync(webhookBody);
-            await _refundHandler.HandleRefundWebhookAsync(result.ExternalRefundId, result.Status);
+            var gatewayResponse = await refundWebhookHandler.HandleRefundWebhookAsync(webhookBody);
+
+            var refund = await _refundRepository.GetRefundByExternalId(gatewayResponse.ExternalRefundId)
+                ?? throw new InvalidOperationException($"Возврат {gatewayResponse.ExternalRefundId} не найден в БД");
+
+            if (refund.Status == gatewayResponse.Status || refund.Status != RefundStatus.Pending)
+                return;
+
+            refund.ApplyGatewayResult(gatewayResponse.ExternalRefundId, gatewayResponse.Status);
+
+            await _db.SaveChangesAsync();
         }
     }
 }

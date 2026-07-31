@@ -1,7 +1,7 @@
 ﻿using PaymentAPI.Primitives;
 namespace PaymentAPI.Models
 {
-    public class OrderItem
+    public class OrderItem : Entity
     {
         public OrderItemId Id { get; private init; }
         public  OrderId OrderId { get; private init; }
