@@ -14,6 +14,8 @@ namespace PaymentAPI.Infrastructure.Configurations
                 .ValueGeneratedNever();
             builder.Property(t => t.UserId).HasConversion<UserId.EfCoreValueConverter>()
                 .ValueGeneratedNever();
+            builder.Property(t => t.ReplacedByToken).HasConversion<RefreshTokenId.EfCoreValueConverter>()
+                .ValueGeneratedNever();
 
             builder.Property(t => t.CreatedAt).HasDefaultValueSql("NOW()");
             builder.Property(t => t.Token).IsRequired().HasMaxLength(500);
