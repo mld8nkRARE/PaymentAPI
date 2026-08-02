@@ -10,7 +10,7 @@ namespace PaymentAPI.Domain
         public DateTime ExpireAt { get; private init; }
         public DateTime CreatedAt { get; private init; } 
         public DateTime? RevokedAt { get; private set; } = null;
-        public string? ReplacedByToken { get; private set; } 
+        public RefreshTokenId? ReplacedByToken { get; private set; } 
         public bool IsActive => !RevokedAt.HasValue && ExpireAt > DateTime.UtcNow;
         public User User { get; private set; } = null! ;
         protected RefreshToken() {}
@@ -23,7 +23,7 @@ namespace PaymentAPI.Domain
             ExpireAt = expireAt;
             CreatedAt = DateTime.UtcNow;
         }
-        public void ReplaceToken(string newToken)
+        public void ReplaceToken(RefreshTokenId newToken)
         {
             ReplacedByToken = newToken;
         }

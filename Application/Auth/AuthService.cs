@@ -66,31 +66,27 @@ namespace PaymentAPI.Application.Auth
                 throw new UnauthorizedAccessException("Токен отозван");
             }
 
-            if (oldToken.ExpireAt <= DateTime.UtcNow)
-            {
-                oldToken.Revoke();
-                await _db.SaveChangesAsync();
-                throw new UnauthorizedAccessException("Токен истёк");
-            }
-
             var user = await _userManager.FindByIdAsync(oldToken.UserId.ToString())
                 ?? throw new InvalidDataException("Пользователь не найден");
 
+            oldToken.Revoke();
+
             var userAuthResponse = _jwtService.GenerateTokens(user);
-            await SaveRefreshTokenAsync(userAuthResponse.RefreshToken,
+            var newToken = await SaveRefreshTokenAsync(userAuthResponse.RefreshToken,
                 userAuthResponse.RefreshTokenExpiresIn, oldToken.UserId);
 
-            oldToken.Revoke();
+            oldToken.ReplaceToken(newToken.Id);
             await _db.SaveChangesAsync();
 
             return userAuthResponse;
         }
-        private async Task SaveRefreshTokenAsync(string token, int refreshTokenExpiresIn, UserId userId)
+        private async Task<RefreshToken> SaveRefreshTokenAsync(string token, int refreshTokenExpiresIn, UserId userId)
         {
             var refreshTokenExpireAt = DateTime.UtcNow.AddSeconds(refreshTokenExpiresIn);
             RefreshToken refreshToken = new RefreshToken(token, userId, refreshTokenExpireAt);
             await _db.RefreshTokens.AddAsync(refreshToken);
             await _db.SaveChangesAsync();
+            return refreshToken;
         }
 
         private async Task RevokeAll(RefreshToken oldToken)
