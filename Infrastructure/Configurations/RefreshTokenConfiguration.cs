@@ -18,9 +18,9 @@ namespace PaymentAPI.Infrastructure.Configurations
                 .ValueGeneratedNever();
 
             builder.Property(t => t.CreatedAt).HasDefaultValueSql("NOW()");
-            builder.Property(t => t.Token).IsRequired().HasMaxLength(500);
+            builder.Property(t => t.TokenHash).IsRequired().HasMaxLength(500);
 
-            builder.HasIndex(t => t.Token).IsUnique();
+            builder.HasIndex(t => t.TokenHash).IsUnique();
             
             builder.HasOne(t => t.User)
                 .WithMany(u => u.RefreshTokens)

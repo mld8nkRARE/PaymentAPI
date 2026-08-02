@@ -11,14 +11,11 @@ namespace PaymentAPI.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<Guid>(
-                name: "replaced_by_token",
-                table: "refresh_tokens",
-                type: "uuid",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "text",
-                oldNullable: true);
+            migrationBuilder.Sql(@"
+                ALTER TABLE refresh_tokens
+                ALTER COLUMN replaced_by_token TYPE uuid 
+                USING replaced_by_token::uuid;
+                ");
         }
 
         /// <inheritdoc />
