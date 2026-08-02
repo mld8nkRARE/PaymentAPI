@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PaymentAPI.Infrastructure;
@@ -11,9 +12,11 @@ using PaymentAPI.Infrastructure;
 namespace PaymentAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260801222358_AddServiceFieldsInRefund")]
+    partial class AddServiceFieldsInRefund
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -311,11 +314,6 @@ namespace PaymentAPI.Migrations
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid")
                         .HasColumnName("order_id");
-
-                    b.Property<string>("ProviderName")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("provider_name");
 
                     b.Property<string>("Status")
                         .IsRequired()

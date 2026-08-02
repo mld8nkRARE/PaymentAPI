@@ -21,16 +21,19 @@ namespace PaymentAPI.Domain.Refunds
         public string? CancellationReason { get; private set; }
         public string? Description { get; private set; }
         public DateTime CreatedAt { get; private init; }
+        public string ProviderName { get; private set; } = default!;
+        public DateTime? NextReconciliationCheckAt { get; private set; }
+        public int ReconciliationAttempts { get; private set; }
 
         public Payment Payment { get; private set; } = null!;
 
         protected Refund() { }
 
-        public Refund(PaymentId paymentId, OrderId orderId, decimal amount, string currency, string? description = null)
+        public Refund(Payment payment, PaymentId paymentId, OrderId orderId, decimal amount, string currency, string providerName, string? description = null)
         {
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(amount);
             ArgumentNullException.ThrowIfNullOrEmpty(currency);
-
+            Payment = payment;
             Id = RefundId.New();
             PaymentId = paymentId;
             OrderId = orderId;
@@ -39,6 +42,8 @@ namespace PaymentAPI.Domain.Refunds
             Description = description;
             Status = RefundStatus.Pending;
             CreatedAt = DateTime.UtcNow;
+            ProviderName = providerName;
+            ScheduleFirstCheck();
         }
 
         public void ApplyGatewayResult(ExternalRefundId externalRefundId, RefundStatus status,
@@ -51,15 +56,14 @@ namespace PaymentAPI.Domain.Refunds
             {
                 case RefundStatus.Pending:
                     Status = RefundStatus.Pending;
+                    ScheduleNextCheck();
                     break;
 
                 case RefundStatus.Succeeded:
                     Status = RefundStatus.Succeeded;
                     bool isFullRefund = Payment.RefundedAmount == Amount;
                     Payment.Order.ChangeStatus(isFullRefund ? OrderStatus.Refunded : OrderStatus.PartiallyRefunded);
-                    //Возможно не стоит передавать isFullRefund, а сделать развилку на 2 события
-                    //Потому что потом будет либо плодиться if/else в обработчике события если нам важен статус в выборе
-                    //Не факт, что вообще для дальнейшей обработки нам важно полный возврат или нет
+                    StopReconciliation();
                     AddDomainEvent(new RefundSucceededEvent(Id,PaymentId,OrderId,Amount, isFullRefund));
                     // product.AddToStock
                     break;
@@ -68,10 +72,27 @@ namespace PaymentAPI.Domain.Refunds
                     Status = RefundStatus.Canceled;
                     CancellationParty = cancellationParty;
                     CancellationReason = cancellationReason;
+                    StopReconciliation();
                     break;
             }
             
         }
-       
+        private void ScheduleFirstCheck()
+        {
+            NextReconciliationCheckAt = DateTime.UtcNow + TimeSpan.FromMinutes(2);
+        }
+
+        private void ScheduleNextCheck()
+        {
+            ReconciliationAttempts++;
+            var delayMinutes = Math.Min(2 * Math.Pow(2, ReconciliationAttempts), 60);
+            NextReconciliationCheckAt = DateTime.UtcNow + TimeSpan.FromMinutes(delayMinutes);
+        }
+
+        private void StopReconciliation()
+        {
+            NextReconciliationCheckAt = null;
+        }
+
     }
 }

@@ -25,12 +25,12 @@ namespace PaymentAPI.Application.Refunds
         public async Task<RefundResponse> CreateRefundAsync(RefundCreateRequest request,
             UserId userId, string idempotenceKey)
         {
+            var cmd = request.ToCommand();
+            var refundGateway = ResolveGateway(cmd);
+
             var payment = await _paymentRepository.GetPaymentByExternalIdAsync(request.ExternalPaymentId);
             var refund = payment.RequestRefund(request.Amount, request.Currency, request.Description, userId);
 
-            var cmd = request.ToCommand();
-            var refundGateway = ResolveGateway(cmd);
-            
             RefundResult gatewayResult = await ((dynamic)refundGateway).CreateRefundAsync((dynamic)cmd, idempotenceKey);
 
             refund.ApplyGatewayResult(

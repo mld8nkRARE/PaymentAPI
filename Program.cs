@@ -79,7 +79,10 @@ builder.Services.AddScoped<WebhookHandler>();
 builder.Services.AddScoped<WebhookVerifierContext>();
 builder.Services.AddScoped<ISourceIpVerifier, YookassaIpVerifier>();
 builder.Services.AddScoped<RefundHandler>();
-//builder.Services.AddHostedService<RefundPollingService>();
+builder.Services.AddScoped<IRefundStatusGateway, YookassaRefundStatusGateway>();
+builder.Services.AddHostedService<RefundPollingService>();
+builder.Services.AddScoped<Dictionary<string, IRefundStatusGateway>>
+    (sp => sp.GetServices<IRefundStatusGateway>().ToDictionary(p => p.ProviderName));
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 builder.Services.AddScoped<IWebhookClassifier,YookassaWebhookClassifier>();
 builder.Services.AddScoped<IPaymentWebhookHandler, YookassaPaymentWebhookHandler>();
