@@ -6,28 +6,28 @@ using System.Text.Json.Serialization;
 namespace PaymentAPI.DTO.refund
 {
     [JsonPolymorphic(TypeDiscriminatorPropertyName = "ProviderName")]
-    [JsonDerivedType(typeof(RefundCreateCommand),"yookassa")]
+    [JsonDerivedType(typeof(RefundCreateYookassaRequest),"yookassa")]
     public abstract record RefundCreateRequest
     {
         [Required]
         [Range(0, 1000000, ErrorMessage = "Amount must be between 0 and 1,000,000")]
-        public required decimal Amount;
+        public required decimal Amount { get; init; }
 
         [Required]
         [RegularExpression("^[A-Z]{3}$", ErrorMessage = "Currency must be 3 uppercase letters")]
         public required string Currency { get; init; }
 
         [Required]
-        public ExternalPaymentId ExternalPaymentId;
+        public ExternalPaymentId ExternalPaymentId { get; init; }
 
         [Required]
-        public required PaymentId PaymentId;
+        public required PaymentId PaymentId { get; init; }
 
         [Required]
-        public required OrderId OrderId;
+        public required OrderId OrderId { get; init; }
 
         [StringLength(500)]
-        public string? Description;
+        public string? Description { get; init; }
 
         abstract public RefundCreateCommand ToCommand();
     };

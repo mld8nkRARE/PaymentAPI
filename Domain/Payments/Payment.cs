@@ -14,6 +14,7 @@ namespace PaymentAPI.Domain.Payments
         public string IdempotencyKey { get; private init; }
         public DateTime CreatedAt { get; private init; }
         public string? Description { get; private set; }
+        public string ProviderName { get; private init; }
         public decimal RefundedAmount => Refunds
         .Where(r => r.Status == RefundStatus.Succeeded)
         .Sum(r => r.Amount);
@@ -27,7 +28,7 @@ namespace PaymentAPI.Domain.Payments
         public Order Order { get; private set; } = null!;
         public User User { get; private set; } = null!;
         protected Payment() { }
-        public Payment(OrderId orderId, UserId userId, decimal amount, string currency, string idempotencyKey,
+        public Payment(OrderId orderId, UserId userId, decimal amount, string currency, string idempotencyKey, string providerName,
             string? description = null, ExternalPaymentId? externalPaymentId = null)
         {
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(amount, nameof(amount));
@@ -43,6 +44,7 @@ namespace PaymentAPI.Domain.Payments
             CreatedAt = DateTime.UtcNow;
             Status = PaymentStatus.Pending;
             Description = description;
+            ProviderName = providerName;
         }
 
         public Refund RequestRefund(decimal amount, string currency, string? description, UserId userId)
@@ -79,7 +81,7 @@ namespace PaymentAPI.Domain.Payments
                 throw new InvalidOperationException(
                     $"Остаток после возврата {remaining} должен быть >= 1 или 0");
             //
-            var refund = new Refund(Id,OrderId, amount, currency, description);
+            var refund = new Refund(this, Id,OrderId, amount, currency, ProviderName, description);
             _refunds.Add(refund);
             return refund;
         }
@@ -99,6 +101,6 @@ namespace PaymentAPI.Domain.Payments
 
             else if(Status == PaymentStatus.Canceled)
                 Order.ChangeStatus(OrderStatus.Cancelled);
-        } 
+        }
     }
 }

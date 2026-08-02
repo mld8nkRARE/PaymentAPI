@@ -1,104 +1,83 @@
-//using PaymentAPI.Infrastructure;
-//using Microsoft.EntityFrameworkCore;
-//using PaymentAPI.Domain.Primitives;
-//using PaymentAPI.Providers.Interfaces;
-//using PaymentAPI.DTO.refund;
+using PaymentAPI.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using PaymentAPI.Domain.Primitives;
+using PaymentAPI.Providers.Interfaces;
+using PaymentAPI.DTO.refund;
+using PaymentAPI.Domain.Refunds;
 
-//namespace PaymentAPI.Application.Refunds
-//{
-//    public class RefundPollingService : BackgroundService
-//    {
-//        private readonly IServiceProvider _serviceProvider;
-//        private readonly ILogger<RefundPollingService> _logger;
+namespace PaymentAPI.Application.Refunds
+{
+    public class RefundPollingService : BackgroundService
+    {
+        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ILogger<RefundPollingService> _logger;
+        private static readonly TimeSpan PollInterval = TimeSpan.FromMinutes(1);
 
-//        public RefundPollingService(IServiceProvider serviceProvider, ILogger<RefundPollingService> logger)
-//        {
-//            _serviceProvider = serviceProvider;
-//            _logger = logger;
-//        }
+        public RefundPollingService(IServiceScopeFactory scopeFactory, ILogger<RefundPollingService> logger)
+        {
+            _scopeFactory = scopeFactory;
+            _logger = logger;
+        }
 
-//        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-//        {
-//            _logger.LogInformation("RefundPollingService запущен");
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            _logger.LogInformation("RefundPollingService запущен");
 
-//            while (!stoppingToken.IsCancellationRequested)
-//            {
-//                try
-//                {
-//                    await ProcessPendingRefundsAsync(stoppingToken);
-//                }
-//                catch (Exception ex)
-//                {
-//                    _logger.LogError(ex, "Ошибка в RefundPollingService");
-//                }
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                try
+                {
+                    await ProcessPendingRefundsAsync(stoppingToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Ошибка в RefundPollingService");
+                }
 
-//                await Task.Delay(TimeSpan.FromMinutes(2), stoppingToken);
-//            }
-//        }
+                await Task.Delay(PollInterval, stoppingToken);
+            }
+        }
 
-//        private async Task ProcessPendingRefundsAsync(CancellationToken cancellationToken)
-//        {
-//            using var scope = _serviceProvider.CreateScope();
-//            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-//            var refundGateways = scope.ServiceProvider.GetRequiredService<IEnumerable<IRefundGateway>>()
-//                .ToDictionary(g => g.ProviderName, StringComparer.OrdinalIgnoreCase);
-//            var refundHandler = scope.ServiceProvider.GetRequiredService<RefundHandler>();
+        private async Task ProcessPendingRefundsAsync(CancellationToken cancellationToken)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var repository = scope.ServiceProvider.GetRequiredService<RefundRepository>();
+            var refundGateways = scope.ServiceProvider.GetRequiredService<Dictionary<string, IRefundStatusGateway>>();
+            var refundHandler = scope.ServiceProvider.GetRequiredService<RefundHandler>();
 
-//            var pendingRefunds = await db.Refunds
-//                .Where(r => r.Status == RefundStatus.Pending
-//                    && r.ExternalRefundId != null
-//                    && r.CreatedAt < DateTime.UtcNow.AddMinutes(-1))
-//                .ToListAsync(cancellationToken);
+            var pendingRefunds = await repository.GetPendingRefundsForPollingServiceAsync(batchSize: 50, cancellationToken);
+            if (pendingRefunds.Count == 0)
+                return;
 
-//            if (pendingRefunds.Count == 0)
-//                return;
+            _logger.LogInformation("Найдено {Count} зависших возвратов в статусе Pending", pendingRefunds.Count);
 
-//            _logger.LogInformation("Найдено {Count} зависших возвратов в статусе Pending", pendingRefunds.Count);
+            foreach (var refund in pendingRefunds)
+            {
+                await ProcessSingleRefundAsync(refund, refundGateways, db, cancellationToken);
+            }
 
-//            foreach (var refund in pendingRefunds)
-//            {
-//                try
-//                {
-//                    RefundResult? result = null;
-//                    foreach (var gateway in refundGateways.Values)
-//                    {
-//                        try
-//                        {
-//                            result = await gateway.GetRefundAsync(refund.ExternalRefundId!);
-//                            break;
-//                        }
-//                        catch
-//                        {
-
-//                        }
-//                    }
-
-//                    if (result is null)
-//                    {
-//                        _logger.LogWarning("Не удалось получить статус возврата {RefundId} ни от одного gateway", refund.ExternalRefundId);
-//                        continue;
-//                    }
-
-//                    if (result.Status == "succeeded")
-//                    {
-//                        refund.SetSucceeded();
-//                        await refundHandler.OnRefundSucceeded(refund);
-//                        _logger.LogInformation("Возврат {RefundId} переведён в Succeeded (polling)", refund.ExternalRefundId);
-//                    }
-//                    else if (result.Status == "canceled")
-//                    {
-//                        refund.SetCanceled(result.CancellationParty ?? "unknown", result.CancellationReason ?? "unknown");
-//                        _logger.LogInformation("Возврат {RefundId} переведён в Canceled (polling), причина: {Reason}",
-//                            refund.ExternalRefundId, result.CancellationReason);
-//                    }
-//                }
-//                catch (Exception ex)
-//                {
-//                    _logger.LogError(ex, "Ошибка при обработке возврата {RefundId}", refund.ExternalRefundId);
-//                }
-//            }
-
-//            await db.SaveChangesAsync(cancellationToken);
-//        }
-//    }
-//}
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        private async Task ProcessSingleRefundAsync(Refund refund, Dictionary<string, IRefundStatusGateway> refundGateways,
+            ApplicationDbContext db, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (!refundGateways.TryGetValue(refund.ProviderName, out var gateway))
+                {
+                    _logger.LogWarning("Не удалось получить статус возврата {RefundId} для провайдера {Provider}",
+                        refund.Id, refund.ProviderName);
+                    return;
+                }
+                var result = await gateway.GetRefundAsync(refund.ExternalRefundId!.Value);
+                refund.ApplyGatewayResult(result.ExternalRefundId, result.Status, result.CancellationParty, result.CancellationReason);
+                await db.SaveChangesAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при обработке возврата {RefundId}", refund.Id);
+            }
+        }
+    }
+}

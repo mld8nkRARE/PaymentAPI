@@ -15,22 +15,23 @@ namespace PaymentAPI.Application.Refunds
         private readonly PaymentRepository _paymentRepository;
 
 
-        public RefundHandler(ApplicationDbContext db)
+        public RefundHandler(ApplicationDbContext db, IServiceProvider serviceProvider)
         {
             _db = db;
+            _serviceProvider = serviceProvider;
             _paymentRepository = new PaymentRepository(_db);
         }
 
         public async Task<RefundResponse> CreateRefundAsync(RefundCreateRequest request,
             UserId userId, string idempotenceKey)
         {
+            var cmd = request.ToCommand();
+            var refundGateway = ResolveGateway(cmd);
+
             var payment = await _paymentRepository.GetPaymentByExternalIdAsync(request.ExternalPaymentId);
             var refund = payment.RequestRefund(request.Amount, request.Currency, request.Description, userId);
 
-            var cmd = request.ToCommand();
-            var refundGateway = ResolveGateway(cmd);
-            
-            RefundResult gatewayResult = await ((dynamic)refundGateway).CreateRefundAsync(cmd, idempotenceKey);
+            RefundResult gatewayResult = await ((dynamic)refundGateway).CreateRefundAsync((dynamic)cmd, idempotenceKey);
 
             refund.ApplyGatewayResult(
                 gatewayResult.ExternalRefundId,
