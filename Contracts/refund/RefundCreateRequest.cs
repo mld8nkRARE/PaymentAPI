@@ -21,9 +21,6 @@ namespace PaymentAPI.DTO.refund
         public ExternalPaymentId ExternalPaymentId { get; init; }
 
         [Required]
-        public required PaymentId PaymentId { get; init; }
-
-        [Required]
         public required OrderId OrderId { get; init; }
 
         [StringLength(500)]
