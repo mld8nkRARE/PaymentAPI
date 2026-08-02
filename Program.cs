@@ -90,6 +90,7 @@ builder.Services.AddScoped<IRefundWebhookHandler, YookassaRefundWebhookHandler>(
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<PaymentRepository>();
 builder.Services.AddScoped<RefundRepository>();
+builder.Services.AddScoped<RefreshTokenRepository>();
 
 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
