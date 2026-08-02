@@ -22,7 +22,7 @@ namespace PaymentAPI.Application.Payments
             var command = request.ToCommand();
             var gateway = ResolveGateway(command);
             var externalResult = await ((dynamic)gateway).CreatePaymentAsync((dynamic)command, idempotenceKey);
-
+            
             var description = request.Description;
             var orderId = request.OrderId;
 
@@ -32,6 +32,7 @@ namespace PaymentAPI.Application.Payments
                 externalResult.Amount,
                 externalResult.Currency,
                 idempotenceKey,
+                command.ProviderName,
                 description,
                 externalResult.ExternalPaymentId);
 

@@ -8,6 +8,9 @@ namespace PaymentAPI.Domain.Payments
         string Currency,
         OrderId OrderId,
         string? Description
-    );
+    )
+    {
+       abstract public string ProviderName { get; }
+    };
     
 }

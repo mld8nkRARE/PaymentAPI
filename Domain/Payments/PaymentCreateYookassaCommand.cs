@@ -6,5 +6,8 @@ namespace PaymentAPI.Domain.Payments
         decimal Amount,
         string Currency,
         OrderId OrderId,
-        string? Description) : PaymentCreateCommand(Amount, Currency,OrderId,Description);
+        string? Description) : PaymentCreateCommand(Amount, Currency, OrderId, Description)
+    {
+        public override string ProviderName => "yookassa";
+    };
 }
