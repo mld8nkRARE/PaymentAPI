@@ -83,7 +83,10 @@ builder.Services.AddScoped<RefundHandler>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 builder.Services.AddScoped<IWebhookClassifier,YookassaWebhookClassifier>();
 builder.Services.AddScoped<IPaymentWebhookHandler, YookassaPaymentWebhookHandler>();
+builder.Services.AddScoped<IRefundWebhookHandler, YookassaRefundWebhookHandler>();
 builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<PaymentRepository>();
+builder.Services.AddScoped<RefundRepository>();
 
 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);

@@ -7,7 +7,7 @@ using PaymentAPI.Extensions;
 namespace PaymentAPI.Controllers
 {
     [Route("api/[controller]")]
-    [AllowAnonymous]
+    [Authorize]
     [ApiController]
     public class PaymentController : ControllerBase
     {

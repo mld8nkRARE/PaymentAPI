@@ -30,8 +30,7 @@ namespace PaymentAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateRefund(
             [FromBody] RefundCreateRequest request,
-            [FromHeader(Name = "Idempotence-Key")] string idempotenceKey,
-            [FromHeader(Name = "Provider")] string provider)
+            [FromHeader(Name = "Idempotence-Key")] string idempotenceKey)
         {
             try
             {
@@ -47,10 +46,7 @@ namespace PaymentAPI.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception)
-            {
-                return BadRequest("Ошибка при создании возврата");
-            }
+          
         }
 
         /// <summary>
