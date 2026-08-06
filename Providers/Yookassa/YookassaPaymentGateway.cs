@@ -58,6 +58,12 @@ namespace PaymentAPI.Providers.Yookassa
             };
         }
 
-       
+        public Task<PaymentResult> CreatePaymentAsync(PaymentCreateCommand cmd, string idempotenceKey)
+        {
+            if (cmd is not PaymentCreateYookassaCommand yookassaCmd)
+                throw new ArgumentException("Команда должна быть типа PaymentCreateYookassaCommand", nameof(cmd));
+
+            return CreatePaymentAsync(yookassaCmd, idempotenceKey);
+        }
     }
 }

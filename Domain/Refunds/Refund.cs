@@ -61,7 +61,7 @@ namespace PaymentAPI.Domain.Refunds
 
                 case RefundStatus.Succeeded:
                     Status = RefundStatus.Succeeded;
-                    bool isFullRefund = Payment.RefundedAmount == Amount;
+                    bool isFullRefund = Payment.RefundedAmount == Payment.Amount;
                     Payment.Order.ChangeStatus(isFullRefund ? OrderStatus.Refunded : OrderStatus.PartiallyRefunded);
                     StopReconciliation();
                     AddDomainEvent(new RefundSucceededEvent(Id,PaymentId,OrderId,Amount, isFullRefund));

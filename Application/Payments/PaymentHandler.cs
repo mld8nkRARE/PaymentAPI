@@ -8,20 +8,23 @@ namespace PaymentAPI.Application.Payments
 {
     public class PaymentHandler
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IEnumerable<IPaymentGateway> _gateways;
         private readonly ApplicationDbContext _db;
 
-        public PaymentHandler(IServiceProvider ServiceProvider, ApplicationDbContext db)
+        public PaymentHandler(IEnumerable<IPaymentGateway> gateways, ApplicationDbContext db)
         {
-            _serviceProvider = ServiceProvider;
+            _gateways = gateways;
             _db = db;
         }
 
         public async Task<PaymentResult> CreatePaymentAsync(PaymentCreateRequest request, UserId userId, string idempotenceKey)
         {
             var command = request.ToCommand();
-            var gateway = ResolveGateway(command);
-            var externalResult = await ((dynamic)gateway).CreatePaymentAsync((dynamic)command, idempotenceKey);
+            
+            var gateway = _gateways.FirstOrDefault(g => g.ProviderName.Equals(command.ProviderName, StringComparison.OrdinalIgnoreCase))
+                ?? throw new NotSupportedException($"Провайдер {command.ProviderName} не поддерживается");
+
+            var externalResult = await gateway.CreatePaymentAsync(command, idempotenceKey);
             
             var description = request.Description;
             var orderId = request.OrderId;
@@ -40,16 +43,6 @@ namespace PaymentAPI.Application.Payments
             await _db.SaveChangesAsync();
 
             return externalResult;
-        }
-        private object ResolveGateway(PaymentCreateCommand command)
-        {
-            var gatewayProviderType = typeof(IPaymentGateway<>).MakeGenericType(command.GetType());
-            var gateway = _serviceProvider.GetService(gatewayProviderType);
-
-            if (gateway is null)
-                throw new NotSupportedException($"Провайдер для {command.GetType().Name} не поддерживается");
-
-            return gateway;
         }
     }
 }

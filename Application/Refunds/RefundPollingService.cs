@@ -54,13 +54,13 @@ namespace PaymentAPI.Application.Refunds
 
             foreach (var refund in pendingRefunds)
             {
-                await ProcessSingleRefundAsync(refund, refundGateways, db, cancellationToken);
+                await ProcessSingleRefundAsync(refund, refundGateways, cancellationToken);
             }
 
             await db.SaveChangesAsync(cancellationToken);
         }
         private async Task ProcessSingleRefundAsync(Refund refund, Dictionary<string, IRefundStatusGateway> refundGateways,
-            ApplicationDbContext db, CancellationToken cancellationToken)
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -72,7 +72,6 @@ namespace PaymentAPI.Application.Refunds
                 }
                 var result = await gateway.GetRefundAsync(refund.ExternalRefundId!.Value);
                 refund.ApplyGatewayResult(result.ExternalRefundId, result.Status, result.CancellationParty, result.CancellationReason);
-                await db.SaveChangesAsync(cancellationToken);
             }
             catch (Exception ex)
             {
