@@ -62,5 +62,13 @@ namespace PaymentAPI.Providers.Yookassa
                 cancellationParty,
                 cancellationReason);
         }
+
+        public Task<RefundResult> CreateRefundAsync(RefundCreateCommand cmd, string idempotenceKey)
+        {
+            if (cmd is not RefundCreateYookassaCommand yookassaCmd)
+                throw new ArgumentException("Команда должна быть типа RefundCreateYookassaCommand", nameof(cmd));
+
+            return CreateRefundAsync(yookassaCmd, idempotenceKey);
+        }
     }
 }

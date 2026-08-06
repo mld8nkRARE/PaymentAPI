@@ -72,8 +72,14 @@ builder.Services.AddControllers();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<YookassaPaymentGateway>();
+builder.Services.AddScoped<IPaymentGateway, YookassaPaymentGateway>();
 builder.Services.AddScoped<IPaymentGateway<PaymentCreateYookassaCommand>, YookassaPaymentGateway>();
+
+builder.Services.AddScoped<YookassaRefundGateway>();
+builder.Services.AddScoped<IRefundGateway, YookassaRefundGateway>();
 builder.Services.AddScoped<IRefundGateway<RefundCreateYookassaCommand>, YookassaRefundGateway>();
+
 builder.Services.AddScoped<PaymentHandler>();
 builder.Services.AddScoped<WebhookHandler>();
 builder.Services.AddScoped<WebhookVerifierContext>();

@@ -9,24 +9,34 @@ namespace PaymentAPI.Infrastructure
         private readonly IPublisher _publisher;
         public DomainEventPublishingInterceptor(IPublisher publisher) => _publisher = publisher;
 
-        public override async ValueTask<int> SavedChangesAsync(
-            SaveChangesCompletedEventData eventData, int result, CancellationToken cancellationToken = default)
+        public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(
+            DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
         {
             var context = eventData.Context;
-            if (context is null) return result;
+            if (context is null) return await base.SavingChangesAsync(eventData, result, cancellationToken);
 
-            var domainEvents = context.ChangeTracker
-                .Entries<Entity>()
-                .SelectMany(e => e.Entity.DomainEvents)
-                .ToList();
+            while (true)
+            {
+                var domainEntities = context.ChangeTracker
+                    .Entries<Entity>()
+                    .Where(x => x.Entity.DomainEvents != null && x.Entity.DomainEvents.Any())
+                    .ToList();
 
-            foreach (var entry in context.ChangeTracker.Entries<Entity>())
-                entry.Entity.ClearDomainEvents();
+                if (!domainEntities.Any())
+                    break;
 
-            foreach (var domainEvent in domainEvents)
-                await _publisher.Publish(domainEvent, cancellationToken);
+                var domainEvents = domainEntities
+                    .SelectMany(x => x.Entity.DomainEvents)
+                    .ToList();
 
-            return result;
+                foreach (var entry in domainEntities)
+                    entry.Entity.ClearDomainEvents();
+
+                foreach (var domainEvent in domainEvents)
+                    await _publisher.Publish(domainEvent, cancellationToken);
+            }
+
+            return await base.SavingChangesAsync(eventData, result, cancellationToken);
         }
     }
 }

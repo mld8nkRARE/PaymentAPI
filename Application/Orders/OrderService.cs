@@ -28,6 +28,7 @@ namespace PaymentAPI.Application.Orders
                 if (product.IsDeleted)
                     throw new ArgumentException($"Продукт {item.ProductId} был удалён");
 
+                product.RemoveFromStock(item.Quantity);
                 order.AddItem(product, item.Quantity);
             }
 

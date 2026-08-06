@@ -47,7 +47,7 @@ namespace PaymentAPI.Domain.Payments
             ProviderName = providerName;
         }
 
-        public Refund RequestRefund(decimal amount, string currency, string? description, UserId userId)
+        public void ValidateRefund(decimal amount, string currency, UserId userId)
         {
             if (UserId != userId)
                 throw new InvalidOperationException($"Платёж {Id} не принадлежит пользователю");
@@ -64,23 +64,22 @@ namespace PaymentAPI.Domain.Payments
             if (amount <= 0 || amount > available)
                 throw new InvalidOperationException($"Недопустимая сумма возврата {amount}. Доступно: {available}");
 
-            //TO DO
-            //if (amount < 1 && payment.Currency == "RUB")
-            //    throw new InvalidOperationException("Минимальная сумма возврата — 1 рубль");
-
-
             if (Order is null)
                 throw new InvalidOperationException($"Заказ для платежа {Id} не найден");
 
             if (Order.Status != OrderStatus.Paid && Order.Status != OrderStatus.PartiallyRefunded)
                 throw new InvalidOperationException($"Возврат невозможен: статус заказа {Order.Status}");
 
-            //TO DO
             var remaining = available - amount;
             if (remaining > 0 && remaining < 1)
                 throw new InvalidOperationException(
                     $"Остаток после возврата {remaining} должен быть >= 1 или 0");
-            //
+        }
+
+        public Refund RequestRefund(decimal amount, string currency, string? description, UserId userId)
+        {
+            ValidateRefund(amount, currency, userId);
+
             var refund = new Refund(this, Id,OrderId, amount, currency, ProviderName, description);
             _refunds.Add(refund);
             return refund;

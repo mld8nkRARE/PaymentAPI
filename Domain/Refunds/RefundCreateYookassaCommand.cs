@@ -1,4 +1,4 @@
-﻿using PaymentAPI.Primitives;
+using PaymentAPI.Primitives;
 
 namespace PaymentAPI.Domain.Refunds
 {
@@ -8,6 +8,8 @@ namespace PaymentAPI.Domain.Refunds
         decimal Amount,
         string Currency,
         string? Description
-    ) : RefundCreateCommand(PaymentId, Amount, Currency, Description);
-    
+    ) : RefundCreateCommand(PaymentId, Amount, Currency, Description)
+    {
+        public override string ProviderName => "yookassa";
+    }
 }

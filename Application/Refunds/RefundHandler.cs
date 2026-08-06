@@ -11,14 +11,14 @@ namespace PaymentAPI.Application.Refunds
     public class RefundHandler
     {
         private readonly ApplicationDbContext _db;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IEnumerable<IRefundGateway> _gateways;
         private readonly PaymentRepository _paymentRepository;
 
 
-        public RefundHandler(ApplicationDbContext db, IServiceProvider serviceProvider)
+        public RefundHandler(ApplicationDbContext db, IEnumerable<IRefundGateway> gateways)
         {
             _db = db;
-            _serviceProvider = serviceProvider;
+            _gateways = gateways;
             _paymentRepository = new PaymentRepository(_db);
         }
 
@@ -26,12 +26,21 @@ namespace PaymentAPI.Application.Refunds
             UserId userId, string idempotenceKey)
         {
             var cmd = request.ToCommand();
-            var refundGateway = ResolveGateway(cmd);
+            
+            var refundGateway = _gateways.FirstOrDefault(g => g.ProviderName.Equals(cmd.ProviderName, StringComparison.OrdinalIgnoreCase))
+                ?? throw new NotSupportedException($"Провайдер {cmd.ProviderName} не поддерживается");
 
-            var payment = await _paymentRepository.GetPaymentByExternalIdAsync(request.ExternalPaymentId);
+            var payment = await _paymentRepository.GetPaymentByExternalIdAsync(request.ExternalPaymentId)
+                ?? throw new InvalidOperationException($"Платёж {request.ExternalPaymentId} не найден");
+
+            // 1. Валидация перед вызовом внешнего шлюза
+            payment.ValidateRefund(request.Amount, request.Currency, userId);
+
+            // 2. Запрос во внешний шлюз
+            RefundResult gatewayResult = await refundGateway.CreateRefundAsync(cmd, idempotenceKey);
+
+            // 3. Создание сущности в домене и привязка к БД только после успешного ответа шлюза
             var refund = payment.RequestRefund(request.Amount, request.Currency, request.Description, userId);
-
-            RefundResult gatewayResult = await ((dynamic)refundGateway).CreateRefundAsync((dynamic)cmd, idempotenceKey);
 
             refund.ApplyGatewayResult(
                 gatewayResult.ExternalRefundId,
@@ -48,14 +57,6 @@ namespace PaymentAPI.Application.Refunds
                 refund.Currency,
                 refund.Status.ToString(),
                 refund.CreatedAt);
-        }
-        private object ResolveGateway(RefundCreateCommand cmd)
-        {
-            var RefundProviderName = typeof(IRefundGateway<>).MakeGenericType(cmd.GetType());
-            var gateway = _serviceProvider.GetService(RefundProviderName);
-            if (gateway is null)
-                throw new NotSupportedException($"Провайдер для {cmd.GetType().Name} не поддерживается");
-            return gateway;
         }
 
         public async Task<RefundResponse?> GetRefundAsync(RefundId refundId, UserId userId)

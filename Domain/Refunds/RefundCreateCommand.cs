@@ -1,4 +1,4 @@
-﻿using PaymentAPI.Primitives;
+using PaymentAPI.Primitives;
 
 namespace PaymentAPI.Domain.Refunds
 {
@@ -8,5 +8,8 @@ namespace PaymentAPI.Domain.Refunds
         decimal Amount,
         string Currency,
         string? Description
-    );
+    )
+    {
+        public abstract string ProviderName { get; }
+    }
 }
