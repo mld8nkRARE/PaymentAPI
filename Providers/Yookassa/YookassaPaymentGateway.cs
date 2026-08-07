@@ -36,6 +36,7 @@ namespace PaymentAPI.Providers.Yookassa
                     Value = amount,
                     Currency = currency
                 },
+                Capture = true,
                 Description = description,
                 Confirmation = new Confirmation
                 {

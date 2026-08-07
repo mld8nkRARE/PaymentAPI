@@ -93,8 +93,10 @@ namespace PaymentAPI.Domain.Payments
             Status = paymentStatus;
 
             if (Status == PaymentStatus.Succeeded)
+            {
                 Order.ChangeStatus(OrderStatus.Paid);
-
+                AddDomainEvent(new PaymentSucceededEvent(DomainEventId.New(), Id, OrderId, Amount, Currency));
+            }
             else if(Status == PaymentStatus.WaitingForCapture)
                 Order.ChangeStatus(OrderStatus.WaitingForCapture);
 

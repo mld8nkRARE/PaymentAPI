@@ -27,7 +27,22 @@ namespace PaymentAPI.Domain.Refunds
 
         public Payment Payment { get; private set; } = null!;
 
+        private readonly List<RefundItem> _items = new();
+        public IReadOnlyCollection<RefundItem> Items => _items.AsReadOnly();
+
         protected Refund() { }
+
+        public void AddItem(Product product, int quantity, decimal unitPrice)
+        {
+            ArgumentNullException.ThrowIfNull(product);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity, nameof(quantity));
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(unitPrice, nameof(unitPrice));
+
+            if (_items.Any(i => i.ProductId == product.Id))
+                throw new InvalidOperationException($"Товар {product.Id} уже присутствует в возврате");
+
+            _items.Add(new RefundItem(this, product, quantity, unitPrice));
+        }
 
         public Refund(Payment payment, PaymentId paymentId, OrderId orderId, decimal amount, string currency, string providerName, string? description = null)
         {
@@ -64,7 +79,7 @@ namespace PaymentAPI.Domain.Refunds
                     bool isFullRefund = Payment.RefundedAmount == Payment.Amount;
                     Payment.Order.ChangeStatus(isFullRefund ? OrderStatus.Refunded : OrderStatus.PartiallyRefunded);
                     StopReconciliation();
-                    AddDomainEvent(new RefundSucceededEvent(Id,PaymentId,OrderId,Amount, isFullRefund));
+                    AddDomainEvent(new RefundSucceededEvent(DomainEventId.New(), Id, PaymentId, OrderId, Amount, isFullRefund));
                     // product.AddToStock
                     break;
 

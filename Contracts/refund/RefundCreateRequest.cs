@@ -26,6 +26,11 @@ namespace PaymentAPI.DTO.refund
         [StringLength(500)]
         public string? Description { get; init; }
 
+        /// <summary>
+        /// Позиции, возвращаемые на склад. Если пусто — возвращается весь заказ целиком.
+        /// </summary>
+        public List<RefundItemCreateRequest> Items { get; init; } = new();
+
         abstract public RefundCreateCommand ToCommand();
     };
 }

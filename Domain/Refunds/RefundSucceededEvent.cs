@@ -1,8 +1,11 @@
-﻿using PaymentAPI.Primitives;
+using MediatR;
+using PaymentAPI.Primitives;
+using PaymentAPI.Domain.Refunds;
 
 namespace PaymentAPI.Domain.Refunds
 {
     public record RefundSucceededEvent(
+        DomainEventId EventId,
         RefundId RefundId,
         PaymentId PaymentId,
         OrderId OrderId,
