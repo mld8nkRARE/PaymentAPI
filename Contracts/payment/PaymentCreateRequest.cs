@@ -10,10 +10,6 @@ namespace PaymentAPI.DTO.payment
     public abstract record PaymentCreateRequest
     {
         [Required]
-        [Range(0, 1000000, ErrorMessage = "Amount must be between 0 and 1,000,000")]
-        public required decimal Amount { get; init; }
-
-        [Required]
         [RegularExpression("^[A-Z]{3}$", ErrorMessage = "Currency must be 3 uppercase letters")]
         public required string Currency { get; init; }
 
@@ -22,6 +18,6 @@ namespace PaymentAPI.DTO.payment
 
         [StringLength(500)]
         public string? Description { get; init; }
-        abstract public PaymentCreateCommand ToCommand();
+        abstract public PaymentCreateCommand ToCommand(decimal amount);
     };
 }

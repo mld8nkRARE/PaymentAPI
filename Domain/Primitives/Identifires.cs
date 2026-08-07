@@ -1,4 +1,4 @@
-﻿﻿using StronglyTypedIds;
+﻿using StronglyTypedIds;
 namespace PaymentAPI.Primitives
 {
     [StronglyTypedId(Template.Guid, "guid-efcore")]
@@ -19,4 +19,8 @@ namespace PaymentAPI.Primitives
     public readonly partial struct ExternalRefundId;
     [StronglyTypedId(Template.Guid, "guid-efcore")]
     public readonly partial struct RefreshTokenId;
+    [StronglyTypedId(Template.Guid, "guid-efcore")]
+    public readonly partial struct DomainEventId;
+    [StronglyTypedId(Template.Guid, "guid-efcore")]
+    public readonly partial struct RefundItemId;
 }

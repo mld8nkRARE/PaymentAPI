@@ -28,7 +28,7 @@ namespace PaymentAPI.Application.Orders
                 if (product.IsDeleted)
                     throw new ArgumentException($"Продукт {item.ProductId} был удалён");
 
-                product.RemoveFromStock(item.Quantity);
+                product.ReserveStock(item.Quantity);
                 order.AddItem(product, item.Quantity);
             }
 
@@ -41,11 +41,18 @@ namespace PaymentAPI.Application.Orders
         public async Task CancelOrderAsync(OrderId orderId, UserId userId)
         {
             var order = await _db.Orders
+                .Include(o => o.OrderItems)
+                .ThenInclude(i => i.Product)
                 .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId)
                 ?? throw new InvalidOperationException($"Заказ {orderId} не найден");
 
             if (order.Status != OrderStatus.Pending)
                 throw new InvalidOperationException($"Невозможно отменить заказ в статусе {order.Status}");
+
+            foreach (var item in order.OrderItems)
+            {
+                item.Product.CancelReservation(item.Quantity);
+            }
 
             order.ChangeStatus(OrderStatus.Cancelled);
             await _db.SaveChangesAsync();

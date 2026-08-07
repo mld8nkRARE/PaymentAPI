@@ -35,6 +35,8 @@ namespace PaymentAPI.Infrastructure.Configurations
                 .WithMany(p => p.Refunds)
                 .HasForeignKey(r => r.PaymentId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Navigation(r => r.Items).UsePropertyAccessMode(PropertyAccessMode.Field);
         }
     }
 }

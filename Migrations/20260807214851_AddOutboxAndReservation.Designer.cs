@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PaymentAPI.Infrastructure;
@@ -11,9 +12,11 @@ using PaymentAPI.Infrastructure;
 namespace PaymentAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260807214851_AddOutboxAndReservation")]
+    partial class AddOutboxAndReservation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -535,52 +538,6 @@ namespace PaymentAPI.Migrations
                     b.ToTable("refunds", (string)null);
                 });
 
-            modelBuilder.Entity("PaymentAPI.Domain.Refunds.RefundItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("name");
-
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("product_id");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer")
-                        .HasColumnName("quantity");
-
-                    b.Property<Guid>("RefundId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("refund_id");
-
-                    b.Property<decimal>("TotalPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)")
-                        .HasColumnName("total_price");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)")
-                        .HasColumnName("unit_price");
-
-                    b.HasKey("Id")
-                        .HasName("pk_refund_items");
-
-                    b.HasIndex("ProductId")
-                        .HasDatabaseName("ix_refund_items_product_id");
-
-                    b.HasIndex("RefundId")
-                        .HasDatabaseName("ix_refund_items_refund_id");
-
-                    b.ToTable("refund_items", (string)null);
-                });
-
             modelBuilder.Entity("PaymentAPI.Domain.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -877,27 +834,6 @@ namespace PaymentAPI.Migrations
                     b.Navigation("Payment");
                 });
 
-            modelBuilder.Entity("PaymentAPI.Domain.Refunds.RefundItem", b =>
-                {
-                    b.HasOne("PaymentAPI.Domain.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_refund_items_products_product_id");
-
-                    b.HasOne("PaymentAPI.Domain.Refunds.Refund", "Refund")
-                        .WithMany("Items")
-                        .HasForeignKey("RefundId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_refund_items_refunds_refund_id");
-
-                    b.Navigation("Product");
-
-                    b.Navigation("Refund");
-                });
-
             modelBuilder.Entity("PaymentAPI.Domain.Order", b =>
                 {
                     b.Navigation("OrderItems");
@@ -908,11 +844,6 @@ namespace PaymentAPI.Migrations
             modelBuilder.Entity("PaymentAPI.Domain.Payments.Payment", b =>
                 {
                     b.Navigation("Refunds");
-                });
-
-            modelBuilder.Entity("PaymentAPI.Domain.Refunds.Refund", b =>
-                {
-                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("PaymentAPI.Domain.User", b =>
